@@ -1,2 +1,4 @@
-1) What is the operating mode with Hash'?
-2) What are the roles for people working with Hash' and accounting
+1) What does his html poc do if eventually you have to type in invoice details into it?
+2) What is the operating mode with Hash'?
+3) What are the roles for people working with Hash' and accounting
+4) is there domain controller in the company site today?
