@@ -111,10 +111,43 @@ To manage user access without running a database server, we use a **Managed Auth
 
 ### How Role Enforcement Works:
 1. Yakir registers his 3 employees in the auth dashboard (takes 2 minutes).
-2. Each user is assigned a role in their user metadata (`publicMetadata: { role: 'bookkeeper' }`).
+2. Each user is assigned a role in their user metadata (`roles: ['submitter']` or `['bookkeeper']`).
 3. When logging into the web app, the frontend decodes the signed JWT token:
    - If `role === 'submitter'`, the **"Export Excel"** button is hidden and disabled.
    - If `role === 'bookkeeper'`, all administrative and export features are unlocked.
+
+### Authentication & RBAC Sequence Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employee as 👷 Employee (Browser)
+    participant DNS as 🌐 DNS Server (Etaniv.co.il)
+    participant CF as ⚡ Cloudflare Pages (yakir-erp.pages.dev)
+    participant Auth0 as 🛡️ Auth0 Identity Cloud
+    participant App as 💻 In-Memory App Engine (JS)
+    actor Sarah as 👩‍💼 Sarah / Yakir (Office PC)
+    participant Hash as 🏢 Hashavshevet ERP
+
+    Employee->>DNS: Access erp.etaniv.co.il
+    DNS-->>Employee: CNAME resolves to Cloudflare Pages
+    Employee->>CF: Load Web App (HTML/CSS/JS)
+    CF-->>Employee: Serves UI & Auth0 SPA SDK
+    Employee->>Auth0: Universal Login (/authorize via PKCE)
+    Auth0-->>Employee: Returns signed JWT ID Token (with roles)
+    App->>App: Evaluates role claims (Submitter vs. Bookkeeper)
+    alt Role == 'Submitter'
+        App->>Employee: Display invoice input form only
+    else Role == 'Bookkeeper'
+        App->>Employee: Display full form + "Generate Hashavshevet Excel" button
+        Employee->>App: Click "Generate Excel"
+        App-->>Employee: Download 'invoices.xlsx'
+        Employee->>Sarah: Provide file for office import
+        Sarah->>Hash: Run 'קליטת פקודות יומן מאקסל' into Open Batch (מנה פתוחה)
+    end
+```
+
+For complete technical implementation details and code snippets, see [**Auth0 RBAC Integration Guide**](./auth0_rbac_integration_guide.md).
 
 ---
 

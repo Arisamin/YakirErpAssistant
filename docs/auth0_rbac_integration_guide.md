@@ -6,19 +6,82 @@ This guide explains how **Auth0 (Free Tier)** connects to Yakir's client-side HT
 
 ## 1. How Auth0 Works in a Serverless/Static App (SPA Flow)
 
-Because the app is a static client hosted on Cloudflare Pages, it uses Auth0's standard **Single Page Application (SPA)** flow with **PKCE (Proof Key for Code Exchange)**:
+Because the app is a static client hosted on Cloudflare Pages, it uses Auth0's standard **Single Page Application (SPA)** flow with **PKCE (Proof Key for Code Exchange)**.
 
+### Sequence Diagram: Subdomain Routing, Cloudflare Delivery & Auth0 RBAC Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employee as 👷 Employee (Browser)
+    participant DNS as 🌐 DNS Server (Etaniv.co.il)
+    participant CF as ⚡ Cloudflare Pages (yakir-erp.pages.dev)
+    participant Auth0 as 🛡️ Auth0 Identity Cloud
+    participant App as 💻 In-Memory App Engine (JS)
+    actor Sarah as 👩‍💼 Sarah / Yakir (Office Desktop)
+    participant Hash as 🏢 Hashavshevet ERP
+
+    %% Step 1: Subdomain Access & Static Asset Delivery
+    Employee->>DNS: Request erp.etaniv.co.il
+    DNS-->>Employee: CNAME resolves to yakir-erp.pages.dev
+    Employee->>CF: GET / (HTTPS Request)
+    CF-->>Employee: Serves static HTML, CSS & Auth0 SPA SDK
+
+    %% Step 2: Authentication & Token Issuance
+    Employee->>App: Initializes App & checks session
+    App->>Auth0: Check existing session (Silent Auth)
+    alt Unauthenticated
+        App->>Auth0: Redirect to Universal Login (/authorize with PKCE)
+        Employee->>Auth0: Submits credentials (email + password)
+        Auth0->>Auth0: Executes Post-Login Action (injects user roles)
+        Auth0-->>Employee: Redirects to erp.etaniv.co.il#code=...
+        App->>Auth0: POST /oauth/token (Exchange code + PKCE verifier)
+        Auth0-->>App: Returns cryptographically signed JWT ID Token
+    end
+
+    %% Step 3: Client-Side RBAC Enforcement
+    App->>App: Decodes claims (https://etaniv.co.il/roles)
+    alt Role == 'Submitter' (Field Employee)
+        App->>Employee: Renders invoice data entry grid only.<br/>(Excel Export button hidden & disabled)
+    else Role == 'Bookkeeper' or 'Approver' (Sarah / Yakir)
+        App->>Employee: Renders full grid + UNLOCKS "Export to Hashavshevet Excel"
+    end
+
+    %% Step 4: Ledger Generation & Hashavshevet Entry
+    opt Authorized Bookkeeper Export
+        Employee->>App: Clicks "Generate Hashavshevet Excel"
+        App->>App: In-memory SheetJS builds formatted .xlsx batch
+        App-->>Employee: Browser downloads 'batch_invoices.xlsx'
+        Employee->>Sarah: Hands file over (LAN / shared drive)
+        Sarah->>Hash: Opens 'קליטת פקודות יומן מאקסל'
+        Hash->>Hash: Imports rows into Open Batch (מנה פתוחה)
+    end
 ```
-[Employee Browser] ──(1. Clicks Login)──> [Auth0 Universal Login Page]
-                                                    │
-                                           (2. Types credentials)
-                                                    │
-[Employee Browser] <──(3. Returns JWT Token)────────┘
-        │
-(4. App reads roles from token)
-        ├── Role 'Submitter'  ──> Shows data entry grid only (Export button hidden)
-        └── Role 'Bookkeeper' ──> Unlocks Hashavshevet Excel export button
-```
+
+---
+
+## 2. How RBAC is Enforced in This Architecture
+
+In a static, serverless architecture without a custom backend server, access control is enforced through **two layers of defense**:
+
+### Layer 1: Cryptographic JWT Claims & Client-Side UI Gating
+1. **Immutable Roles:** When the user logs in, Auth0's server signs an ID token using **RS256 asymmetric encryption**. The user's role (e.g., `Submitter`, `Approver`, `Bookkeeper`) is embedded inside the token payload:
+   ```json
+   {
+     "sub": "auth0|64f1a2b3c4d5e6f",
+     "name": "Yossi Cohen",
+     "https://etaniv.co.il/roles": ["Submitter"]
+   }
+   ```
+2. **Deterministic UI Rendering:** The client-side application inspects the cryptographically validated claims:
+   - For **Submitters:** The button "Export Hashavshevet Batch" is completely excluded from the DOM. Standard employees can only type invoice rows and validate VAT math.
+   - For **Approvers / Bookkeepers:** Review controls, account mapping tools, and export triggers are mounted and active.
+
+### Layer 2: Physical & Operational Perimeter (Hashavshevet Defense)
+Even if a technically inclined employee attempts to bypass client-side JavaScript (e.g., by modifying DOM elements in Chrome DevTools to unhide the export button):
+1. **Local-Only File Generation:** The app runs in the user's browser memory. Bypassing the UI button merely generates an Excel file on the employee's personal device.
+2. **Zero Direct ERP Access:** The web app has **no network connection to Hashavshevet**. Hashavshevet runs exclusively on Yakir's physical office PC behind the office firewall.
+3. **The Ultimate Gatekeeper:** Only Sarah and Yakir possess Windows login credentials to the office PC and the administrative master password inside Hashavshevet. An unauthorized Excel file can never reach Hashavshevet's ledger without Sarah physically selecting and reviewing it inside the software.
 
 ---
 
