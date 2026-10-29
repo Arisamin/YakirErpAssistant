@@ -21,11 +21,12 @@ Comprehensive technical, operational, and architectural documentation is availab
 
 1. [**System Architecture & Design: Version 2 (Simplified MVP)**](./docs/system_architecture_and_design_v2_simplified.md): **Current Active Architecture.** Zero-database stateless design, online hosting of Yakir's HTML POC, multi-role access control (RBAC), and Hashavshevet native Excel import engine at ~0 ₪/mo running cost.
 2. [**Cloudflare Pages Deployment & Subdomain DNS Guide**](./docs/cloudflare_deployment_and_dns_guide.md): Step-by-step walkthrough for deploying to Cloudflare Pages (Free Tier) and setting up a dedicated CNAME subdomain with zero disruption to Yakir's WordPress site.
-3. [**System Architecture & Workflows (v1)**](./docs/system_architecture_and_workflows.md): High-level hosting block diagrams, 5-level component breakdown, sequence diagrams, and end-to-end purchase-to-ledger workflow.
-4. [**System Architecture & Roadmap (v1 & Future)**](./docs/system_architecture_and_roadmap.md): Complete architectural blueprint, Israeli ERP competitive market analysis, RBAC permissions matrix, and future upgrade roadmap (AI Vision, Movein, H-Connect).
-5. [**Hashavshevet Internal Architecture**](./docs/hashavshevet_internal_architecture.md): Deep dive into Hashavshevet on-premise MS SQL data locality, 2-phase commit state machine, immutable audit logs, and Movein vs. H-Connect technical trade-offs.
-6. [**Yakir Operations & Infrastructure Guide**](./docs/yakir_operations_and_infrastructure.md): Detailed comparison of Yakir's manual "before" workflow vs. automated "after" digital inbox, required cloud accounts, cost calculation (~110–190 ₪/mo), and office hardware.
-7. [**Accounting Dictionary for Software Engineers**](./docs/accounting_dictionary.md): Living developer dictionary mapping Israeli accounting concepts and Hebrew terminology directly into software engineering equivalents.
+3. [**Auth0 RBAC Integration Guide**](./docs/auth0_rbac_integration_guide.md): Complete architecture and setup for securing Yakir's client-side app with Auth0 SPA SDK and enforcing Role-Based Access Control without a database.
+4. [**System Architecture & Workflows (v1)**](./docs/system_architecture_and_workflows.md): High-level hosting block diagrams, 5-level component breakdown, sequence diagrams, and end-to-end purchase-to-ledger workflow.
+5. [**System Architecture & Roadmap (v1 & Future)**](./docs/system_architecture_and_roadmap.md): Complete architectural blueprint, Israeli ERP competitive market analysis, RBAC permissions matrix, and future upgrade roadmap (AI Vision, Movein, H-Connect).
+6. [**Hashavshevet Internal Architecture**](./docs/hashavshevet_internal_architecture.md): Deep dive into Hashavshevet on-premise MS SQL data locality, 2-phase commit state machine, immutable audit logs, and Movein vs. H-Connect technical trade-offs.
+7. [**Yakir Operations & Infrastructure Guide**](./docs/yakir_operations_and_infrastructure.md): Detailed comparison of Yakir's manual "before" workflow vs. automated "after" digital inbox, required cloud accounts, cost calculation (~110–190 ₪/mo), and office hardware.
+8. [**Accounting Dictionary for Software Engineers**](./docs/accounting_dictionary.md): Living developer dictionary mapping Israeli accounting concepts and Hebrew terminology directly into software engineering equivalents.
 
 ---
 
