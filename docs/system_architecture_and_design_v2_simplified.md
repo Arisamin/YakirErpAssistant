@@ -153,14 +153,14 @@ Hashavshevet features a built-in Excel import wizard (*קליטת תנועות �
 | **File Storage** | Cloudflare R2 / S3 (~$5 / mo) | **None (0 ₪)** |
 | **AI Vision & OCR** | OpenAI Vision API (~$10–$20 / mo) | **None (Deferred - 0 ₪)** |
 | **User Authentication** | Custom Auth / Supabase Auth | **Clerk / Auth0 (Free Tier up to 10k users - 0 ₪)** |
-| **Custom Domain** | New .co.il domain (~6 ₪ / mo) | **Existing Domain Subdomain (e.g. `erp.yakir-biz.co.il` - 0 ₪)** |
+| **Custom Domain** | New .co.il domain (~6 ₪ / mo) | **Existing Domain Subdomain (`erp.etaniv.co.il` - 0 ₪)** |
 | **TOTAL RUNNING COST** | **~110 – 190 ₪ / month** | **0 ₪ / month (100% FREE)** |
 
 ### 7.1 Reusing Yakir's Existing WordPress Domain via Subdomain (Zero Disruption)
-Yakir already owns an active domain hosting his WordPress/Elementor business website. We can leverage it with zero risk:
-- **DNS Subdomain Routing:** Add a single DNS `CNAME` record (e.g., `invoices` or `erp`) pointing to the app's edge host (e.g., `cname.vercel-dns.com` or Cloudflare).
-- **Complete Isolation:** The apex domain (`@`) and `www` continue routing to his WordPress hosting server unchanged. There is zero risk of downtime, theme conflicts, or disruptions to his promotional website.
-- **SSL Certificate:** Handled automatically by the host (Let's Encrypt automated TLS) at 0 ₪ cost.
+Yakir already owns an active domain (`etaniv.co.il`) hosting his WordPress business website (`www.etaniv.co.il`). We can leverage it with zero risk:
+- **DNS Subdomain Routing:** Add a single DNS `CNAME` record (`erp`) pointing to the app's edge host (e.g., `yakir-erp-assistant.pages.dev`).
+- **Complete Isolation:** The apex domain (`etaniv.co.il`) and `www` continue routing to his WordPress hosting server unchanged. There is zero risk of downtime, theme conflicts, or disruptions to his promotional website.
+- **SSL Certificate:** Handled automatically by Cloudflare Pages (automated TLS) at 0 ₪ cost.
 
 ---
 
