@@ -126,7 +126,7 @@ To deploy and run this web platform, Yakir will need to register and open accoun
 | **Application Hosting** | Hosts the Web Frontend (Next.js/React) and Backend REST API server. | **Render.com** or **DigitalOcean App Platform** *(very simple for non-devops)* | **$7 – $20 / month** (~25 – 75 ₪) |
 | **Managed Database** | Relational DB storing users, invoices, mappings, audit trails. | **Supabase** (Managed PostgreSQL) or **Neon.tech** | **$0 – $25 / month** (Free tier covers initial volume) |
 | **Encrypted File Storage** | Secure cloud storage for original scanned PDFs & invoice images. | **Cloudflare R2** or **AWS S3** | **$1 – $5 / month** *(Cloudflare R2 has zero data transfer fees)* |
-| **Domain & SSL Certificate** | Company web address (e.g., `invoices.yakir-biz.co.il`). | **LiveDNS** / **Box.co.il** / **DomainTheNet** | **~$15 – $20 / year** (~60 – 80 ₪/year) |
+| **Domain & SSL Certificate** | Company web address (e.g., `erp.yakir-biz.co.il`). | **Reuse Yakir's Existing Domain** via Subdomain CNAME record (WordPress site remains 100% untouched). | **0 ₪ (Free)** |
 
 ---
 
