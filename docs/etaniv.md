@@ -141,12 +141,18 @@ Below are comprehensive sequence diagrams covering all core business and operati
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 👤 Employee / Yakir
-    participant Web as 💻 React PWA (web/)
-    participant API as ⚙️ Express Server (server/)
-    participant Auth as 🛡️ Auth Module & JWT
-    participant DB as 🗄️ PostgreSQL (Prisma)
-    actor Authenticator as 📱 Google/MS Authenticator
+    
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor User as 👤 Employee / Yakir
+        actor Authenticator as 📱 Google/MS Authenticator
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (web/)
+        participant API as ⚙️ Express Server (server/)
+        participant Auth as 🛡️ Auth Module & JWT
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
 
     User->>Web: Enters email & password
     Web->>API: POST /api/auth/login {email, password}
@@ -184,12 +190,18 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor PM as 👷 Project Manager / Engineer
-    actor Finance as 👩‍💼 Finance / Ronit
-    participant Web as 💻 React PWA (Suppliers.tsx)
-    participant API as ⚙️ Express Server (invoices.routes.ts)
-    participant Validator as 🔍 3-Way Match & Rule Engine
-    participant DB as 🗄️ PostgreSQL (Prisma)
+
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor PM as 👷 Project Manager / Engineer
+        actor Finance as 👩‍💼 Finance / Ronit
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (Suppliers.tsx)
+        participant API as ⚙️ Express Server (invoices.routes.ts)
+        participant Validator as 🔍 3-Way Match & Rule Engine
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
 
     %% Step 1: Ingestion & Splitting
     PM->>Web: Clicks "קליטת חשבונית ספק"
@@ -235,12 +247,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Sarah as 👩‍💼 Sarah / Finance Admin
-    participant Web as 💻 React PWA (Import.tsx / Suppliers.tsx)
-    participant API as ⚙️ Express Server (hashavshevet.routes.ts)
-    participant Engine as 📄 Hashavshevet Export Engine
-    participant DB as 🗄️ PostgreSQL (Prisma)
-    actor HashClient as 🏢 Hashavshevet Windows UI (Office PC)
+
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor Sarah as 👩‍💼 Sarah / Finance Admin
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (Import.tsx / Suppliers.tsx)
+        participant API as ⚙️ Express Server (hashavshevet.routes.ts)
+        participant Engine as 📄 Hashavshevet Export Engine
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
+
+    box rgb(255, 245, 235) 🏢 Yakir's Office On-Premises (Local PC)
+        actor HashClient as 🏢 Hashavshevet Windows UI (Office PC)
+    end
 
     Sarah->>Web: Navigates to "ייצוא לחשבשבת"
     Web->>API: GET /api/hashavshevet/pending
@@ -276,12 +297,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Yakir as 👔 Yakir / Finance Director
-    participant Web as 💻 React PWA (Reports.tsx / Cashflow)
-    participant API as ⚙️ Express Server (payments.routes.ts)
-    participant MasavEngine as 🏦 Masav Formatter (Record Types 1, 2, 5)
-    participant DB as 🗄️ PostgreSQL (Prisma)
-    actor BankPortal as 🌐 Corporate Bank Portal (Leumi/Hapoalim)
+
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor Yakir as 👔 Yakir / Finance Director
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (Reports.tsx / Cashflow)
+        participant API as ⚙️ Express Server (payments.routes.ts)
+        participant MasavEngine as 🏦 Masav Formatter (Record Types 1, 2, 5)
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
+
+    box rgb(235, 245, 235) 🏦 Israeli Banking Network
+        actor BankPortal as 🌐 Corporate Bank Portal (Leumi/Hapoalim)
+    end
 
     %% Step 1: Schedule & Cashflow
     Yakir->>Web: Opens "תזרים מזומנים ומועדי תשלום"
@@ -325,11 +355,17 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor PM as 👷 Project Manager
-    actor Client as 🏢 Customer (Municipal Water Corp / Dev)
-    participant Web as 💻 React PWA (BillingDocs.tsx / Collections.tsx)
-    participant API as ⚙️ Express Server (billingDocs / collections)
-    participant DB as 🗄️ PostgreSQL (Prisma)
+
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor PM as 👷 Project Manager
+        actor Client as 🏢 Customer (Municipal Water Corp / Dev)
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (BillingDocs.tsx / Collections.tsx)
+        participant API as ⚙️ Express Server (billingDocs / collections)
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
 
     %% Step 1: Issuing Milestone Billing with Retention
     PM->>Web: Navigates to "חשבוניות ללקוח" -> "הפק מסמך חיוב"
@@ -372,11 +408,17 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Foreman as 👷 Site Foreman / Omer
-    actor Yakir as 👔 Yakir (CEO)
-    participant Web as 💻 React PWA (Labor.tsx / Overview.tsx)
-    participant API as ⚙️ Express Server (labor.routes.ts / overview.routes.ts)
-    participant DB as 🗄️ PostgreSQL (Prisma)
+
+    box rgb(240, 245, 255) 👤 User Physical Endpoints
+        actor Foreman as 👷 Site Foreman / Omer
+        actor Yakir as 👔 Yakir (CEO)
+    end
+
+    box rgb(245, 245, 245) ☁️ Render Cloud Platform (Frankfurt EU)
+        participant Web as 💻 React PWA (Labor.tsx / Overview.tsx)
+        participant API as ⚙️ Express Server (labor.routes.ts / overview.routes.ts)
+        participant DB as 🗄️ PostgreSQL (Prisma)
+    end
 
     %% Step 1: Logging Labor Hours
     Foreman->>Web: Opens "עבודה ועובדים" monthly matrix
