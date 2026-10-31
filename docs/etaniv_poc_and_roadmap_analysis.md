@@ -104,8 +104,49 @@ The guide outlines a turnkey 3-tier architecture built for **Render.com**:
 
 ---
 
-## 3. Recommended Path Forward
+---
+
+## 3. Part C: Production Source Code Analysis (`etaniv-app_21`)
+
+The newly added folder `From Yakir/etaniv-app_21` (and archive `etaniv-app_21.zip`) contains the **actual production source code** of the application.
+
+```
+etaniv-app_21/
+├── server/               # Backend API: Node.js + Express + TypeScript + Prisma ORM
+│   ├── prisma/
+│   │   ├── schema.prisma # Complete PostgreSQL relational schema (16 models)
+│   │   ├── seed.ts       # Database seeder (creates roles, Yakir admin, seed data)
+│   │   └── real-accounts.ts # 756 real suppliers + 172 customers from Hashavshevet
+│   ├── src/              # Routes, controllers, middlewares, JWT/TOTP 2FA logic
+│   └── Dockerfile        # Production container specification for Render
+├── web/                  # Frontend: React + TypeScript + Vite PWA (Hebrew RTL)
+│   ├── src/              # All 9 module views, components, state management
+│   └── index.html        # PWA entry point
+├── scripts/              # Utility scripts (gen-secrets.sh for JWT keys)
+├── render.yaml           # Render.com Blueprint (IaC - Infrastructure as Code)
+├── DEPLOY.md             # Concise production deployment checklist
+└── README.md             # Full architecture and development documentation
+```
+
+### 3.1 Relationship Between the Source Code and the HTML POC
+- **The HTML POC (`אתניב — מערכת ניהול פרויקטלי (תצוגה חיה).html`):** A compiled, standalone client demo bundle. To enable instant browser preview without installing Node, Docker, or PostgreSQL, an in-memory mock API was injected at the top (`window.fetch` interceptor) providing simulated responses for 43 endpoints.
+- **The Codebase (`etaniv-app_21`):** The real, maintainable source code. The frontend in `web/` connects via HTTP/REST to the real Express backend in `server/`, which persists all transactions, files, users, and audit logs into a true PostgreSQL database via Prisma ORM.
+
+### 3.2 How It Fits Into the Go-Live Plan
+`etaniv-app_21` is the exact software package required to execute `Etaniv — Go Live Guide.html` and `DEPLOY.md`:
+1. **Repository Setup:** The unzipped folder is pushed to a private GitHub repository (`etaniv-app`).
+2. **One-Click Cloud Provisioning (`render.yaml`):** Render reads `render.yaml` and automatically provisions:
+   - `etaniv-db`: PostgreSQL database in Frankfurt (EU).
+   - `etaniv-api`: Docker container running the Express API with auto-generated JWT secrets.
+   - `etaniv-web`: Static PWA deployed globally with SPA rewrite rules.
+3. **Database Population (`seed.js`):** Executing `node dist/prisma/seed.js` inside Render's web shell loads the 756 real suppliers, 172 customers, admin account (`yakir@etaniv.co.il`), and role matrices.
+4. **Domain Mapping:** Setting DNS CNAME records for `app.etaniv.co.il` and `api.etaniv.co.il` completes the launch.
+
+---
+
+## 4. Recommended Path Forward
 
 1. **Adopt the Etaniv Model:** Align all system architecture and data models around the Etaniv Project Management System (`etaniv-app`).
 2. **Execute Render.com Deployment:** Use `render.yaml` to deploy `etaniv-api`, `etaniv-db`, and `etaniv-web` to Render at ~$14/month, connected to `app.etaniv.co.il` and `api.etaniv.co.il`.
 3. **Integrate AI Ingestion as Phase 2:** Once the live portal is running on Render, add our multimodal AI extraction engine as an automated ingest worker that populates Etaniv's supplier invoice intake queue.
+

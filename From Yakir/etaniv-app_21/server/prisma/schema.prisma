@@ -1,0 +1,292 @@
+// מערכת ניהול פרויקטלי-פיננסי לאתניב — סכמת מסד נתונים
+// PostgreSQL + Prisma. כל טבלאות התנועה משויכות לפרויקט לצורך ניתוח רווחיות.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== משתמשים, תפקידים והרשאות ==========
+
+enum UserStatus {
+  PENDING   // ממתין לאישור מנהל
+  APPROVED  // מאושר — יכול להתחבר
+  DISABLED  // מושבת
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  key         String       @unique // admin | finance | pm | viewer
+  name        String
+  permissions Permission[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+}
+
+model Permission {
+  id        String  @id @default(cuid())
+  role      Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  menuKey   String  // overview | suppliers | labor | contracts | docs | collections | reports | import | permissions
+  canView   Boolean @default(false)
+  canWrite  Boolean @default(false)
+  canDelete Boolean @default(false)
+
+  @@unique([roleId, menuKey])
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       String
+  status       UserStatus @default(PENDING)
+  mfaEnabled   Boolean    @default(false)
+  mfaSecret    String? // סוד TOTP (מוצפן ברמת המסד/יישום)
+  lastLogin    DateTime?
+  createdAt    DateTime   @default(now())
+
+  auditLogs         AuditLog[]
+  collectionActions CollectionAction[]
+  approvedInvoices  SupplierInvoice[]  @relation("ApprovedBy")
+  uploadedFiles     FileAsset[]
+}
+
+// ========== ליבה פרויקטלית ==========
+
+model Project {
+  id         String  @id @default(cuid())
+  code       String  @unique // מספר פרויקט (101, 102 ...)
+  name       String
+  costBudget Decimal @default(0) @db.Decimal(14, 2)
+  status     String  @default("פעיל")
+  createdAt  DateTime @default(now())
+
+  invoiceLines InvoiceLine[]
+  contracts    Contract[]
+  workdays     Workday[]
+}
+
+model ExpenseType {
+  id   String @id @default(cuid())
+  name String @unique
+}
+
+// ========== ספקים והוצאות ==========
+
+model Supplier {
+  id                 String  @id @default(cuid())
+  name               String
+  taxId              String?
+  hhAccountKey       String? // מספר ספק / מפתח חשבון בחשבשבת (לייצוא תנועות)
+  vatRate            Float   @default(18) // שיעור מע"מ באחוזים (למשל 0 לספק פטור באילת)
+  defaultExpenseType String?
+  defaultTerms       String? // ימי שוטף+
+  bankCode           String? // קוד בנק (לקובץ מס"ב)
+  branchCode         String? // קוד סניף
+  bankAccount        String? // מספר חשבון
+  invoices           SupplierInvoice[]
+}
+
+// הגדרות ארגון — כולל פרטי "מוסד שולח" לקובץ מס"ב ויתרת פתיחה לתזרים.
+// רשומה יחידה (singleton).
+model OrgSetting {
+  id                   String  @id @default(cuid())
+  masavInstitutionCode String  @default("00000000") // מספר מוסד שולח (מהבנק) — Placeholder עד קבלת קוד אמיתי
+  masavSenderName      String  @default("אתניב ב.י בעמ")
+  openingBalance       Decimal @default(0) @db.Decimal(14, 2) // יתרת פתיחה לתזרים
+}
+
+model SupplierInvoice {
+  id              String    @id @default(cuid())
+  supplier        Supplier  @relation(fields: [supplierId], references: [id])
+  supplierId      String
+  invoiceNo       String
+  invoiceDate     DateTime
+  intakeDate      DateTime  @default(now())
+  docKind         String    @default("tax") // tax = חשבונית מס · esek = חשבון עסקה (פרופורמה)
+  amountBeforeVat Decimal   @db.Decimal(14, 2)
+  vatRate         Float     @default(18) // שיעור מע"מ שהוחל על חשבונית זו (%)
+  vat             Decimal   @db.Decimal(14, 2)
+  total           Decimal   @db.Decimal(14, 2)
+  terms           String    @default("30")
+  payDate         DateTime?
+  approved        Boolean   @default(false)
+  approvedBy      User?     @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvedById    String?
+  recordedHh      Boolean   @default(false) // נקלט בהנהלת חשבונות
+  inCashflow      Boolean   @default(false) // צורף לתזרים
+  paid            Boolean   @default(false)
+  actualPayDate   DateTime?
+  paidBatchRef    String? // אסמכתת מקבץ התשלום (מקובץ ההעברות בבנק)
+  reference       String?
+  purchaseOrderNo String? // מספר הזמנת רכש (שיצאה מאיתנו)
+  deliveryNoteNo  String? // מספר תעודת משלוח (של הספק)
+  matched         Boolean   @default(false) // הותאם להזמנת רכש ולתעודת משלוח (3-way match)
+  notes           String? // הערות במלל חופשי
+  selfInvoiceNo   String? // מספר חשבונית עצמית (לספקים שמפיקים עבורם חשבונית עצמית)
+  hhExportedAt    DateTime? // מועד ייצוא לחשבשבת — מונע ייצוא כפול
+  hhExportBatch   String? // מזהה אצוות הייצוא לחשבשבת
+  file            FileAsset? @relation(fields: [fileId], references: [id])
+  fileId          String?
+  createdAt       DateTime  @default(now())
+
+  lines InvoiceLine[]
+}
+
+model InvoiceLine {
+  id          String          @id @default(cuid())
+  invoice     SupplierInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  project     Project         @relation(fields: [projectId], references: [id])
+  projectId   String
+  expenseType String
+  amount      Decimal         @db.Decimal(14, 2)
+}
+
+// ========== לקוחות, חוזים והכנסות ==========
+
+model Customer {
+  id        String     @id @default(cuid())
+  name      String
+  taxId     String?
+  contact   String?
+  email     String?
+  phone     String?
+  contracts Contract[]
+}
+
+model Contract {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  customer     Customer @relation(fields: [customerId], references: [id])
+  customerId   String
+  project      Project  @relation(fields: [projectId], references: [id])
+  projectId    String
+  value        Decimal  @db.Decimal(14, 2)
+  paymentTerms String   @default("60")
+  retentionPct Decimal  @default(0) @db.Decimal(5, 2)
+  startDate    DateTime?
+  status       String   @default("פעיל")
+  createdAt    DateTime @default(now())
+
+  billingDocs BillingDoc[]
+}
+
+enum DocType {
+  ESEK       // חשבון עסקה
+  TAX        // חשבונית מס
+  TAX_RECEIPT // חשבונית מס-קבלה
+}
+
+model BillingDoc {
+  id              String   @id @default(cuid())
+  type            DocType
+  number          String
+  contract        Contract @relation(fields: [contractId], references: [id])
+  contractId      String
+  issueDate       DateTime
+  amountBeforeVat Decimal  @db.Decimal(14, 2)
+  retentionPct    Decimal  @default(0) @db.Decimal(5, 2)
+  terms           String   @default("60")
+  dueDate         DateTime?
+  status          String   @default("טיוטה")
+  paidAmount      Decimal  @default(0) @db.Decimal(14, 2)
+  paidDate        DateTime?
+  reference       String?
+  recordedHh      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  offsets BillingOffset[]
+  actions CollectionAction[]
+}
+
+model BillingOffset {
+  id     String     @id @default(cuid())
+  doc    BillingDoc @relation(fields: [docId], references: [id], onDelete: Cascade)
+  docId  String
+  reason String
+  amount Decimal    @db.Decimal(14, 2)
+}
+
+model CollectionAction {
+  id           String     @id @default(cuid())
+  doc          BillingDoc @relation(fields: [docId], references: [id], onDelete: Cascade)
+  docId        String
+  actionType   String
+  actionDate   DateTime   @default(now())
+  note         String?
+  nextFollowup DateTime?
+  user         User?      @relation(fields: [userId], references: [id])
+  userId       String?
+}
+
+// ========== עבודה ==========
+
+model Worker {
+  id        String    @id @default(cuid())
+  name      String
+  role      String?
+  dailyCost Decimal   @default(0) @db.Decimal(10, 2)
+  active    Boolean   @default(true)
+  workdays  Workday[]
+}
+
+model Workday {
+  id        String  @id @default(cuid())
+  worker    Worker  @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  workerId  String
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  month     String  // "2026-07"
+  days      Decimal @db.Decimal(5, 1)
+
+  @@unique([workerId, projectId, month])
+}
+
+// ========== קבצים ויומן ביקורת ==========
+
+model FileAsset {
+  id           String   @id @default(cuid())
+  entity       String   // supplier_invoice | billing_doc | import ...
+  entityId     String?
+  filename     String
+  storageKey   String
+  scanned      Boolean  @default(false)
+  scanResult   String?  // clean | infected | error
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+  uploadedById String?
+  uploadedAt   DateTime @default(now())
+
+  supplierInvoices SupplierInvoice[]
+}
+
+// הגדרת שדות חובה לאישור חשבונית ספק — ניתן לעריכה ע"י מנהל המערכת
+model InvoiceFieldSetting {
+  id       String  @id @default(cuid())
+  fieldKey String  @unique // purchaseOrderNo | deliveryNoteNo | selfInvoiceNo | matched | lines | notes
+  label    String
+  required Boolean @default(false)
+  sortOrder Int    @default(0)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  action    String   // LOGIN | CREATE | UPDATE | DELETE | IMPORT | EXPORT ...
+  entity    String
+  entityId  String?
+  ip        String?
+  details   String?
+  timestamp DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+}

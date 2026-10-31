@@ -19,7 +19,7 @@ An automated, web-based digital inbox and accounting assistant designed for Isra
 
 Comprehensive technical, operational, and architectural documentation is available in the [`docs/`](./docs) directory:
 
-1. [**Analysis of Etaniv POC Tool & AI Technical Roadmap**](./docs/etaniv_poc_and_roadmap_analysis.md): **Direct Analysis of Yakir's Artifacts.** Detailed analysis of Yakir's HTML POC (`אתניב`), 43 mocked API endpoints, 6-stage invoice lifecycle, 3-way matching, project cost splitting, Masav bank transfers, and Render.com deployment blueprint.
+1. [**Etaniv System: Complete POC, Codebase & Roadmap Analysis**](./docs/etaniv.md) / [**Detailed Analysis Report**](./docs/etaniv_poc_and_roadmap_analysis.md): **Direct Analysis of Yakir's Artifacts & Source Code.** Detailed breakdown of `etaniv-app_21` monorepo (`server/` + `web/` + `render.yaml`), comparison with the single-file HTML POC (`אתניב`), 43 mocked API endpoints, 6-stage invoice lifecycle, 3-way matching, project cost splitting, Masav bank transfers, and Render.com deployment blueprint.
 2. [**System Architecture & Design: Version 2 (Simplified MVP)**](./docs/system_architecture_and_design_v2_simplified.md): Lean architecture, hosting, access control, and Hashavshevet native Excel import engine.
 3. [**Cloudflare Pages Deployment & Subdomain DNS Guide**](./docs/cloudflare_deployment_and_dns_guide.md): Step-by-step walkthrough for deploying to Cloudflare Pages (Free Tier) and setting up a dedicated CNAME subdomain with zero disruption to Yakir's WordPress site.
 4. [**Auth0 RBAC Integration Guide**](./docs/auth0_rbac_integration_guide.md): Complete architecture and setup for securing Yakir's client-side app with Auth0 SPA SDK and enforcing Role-Based Access Control without a database.

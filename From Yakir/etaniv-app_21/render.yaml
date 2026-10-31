@@ -1,0 +1,54 @@
+# Render Blueprint — פריסת מערכת אתניב (שרת API + PWA + מסד נתונים) באזור אירופה.
+# שימוש: ב-Render → New → Blueprint → חבר את המאגר. Render יזהה קובץ זה.
+# ערכים המסומנים sync:false יתבקשו ממך בעת ההקמה (סיסמת מנהל, כתובות).
+
+databases:
+  - name: etaniv-db
+    databaseName: etaniv
+    region: frankfurt
+    plan: free            # נוצר כחינמי; שדרג לתוכנית בתשלום מלוח הבקרה מיד לאחר הפריסה (ראה מדריך). מסד חינמי פג לאחר 30 יום.
+
+services:
+  # ---- שרת ה-API ----
+  - type: web
+    name: etaniv-api
+    runtime: docker
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    region: frankfurt
+    plan: starter            # שרת בתשלום (~$7/חודש) — לא "נרדם" בחוסר פעילות. מתאים לייצור.
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: etaniv-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true      # Render מייצר סוד אקראי
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_EMAIL
+        value: yakir@etaniv.co.il
+      - key: ADMIN_NAME
+        value: יקיר אתניב
+      - key: ADMIN_PASSWORD
+        sync: false              # יוזן ידנית (סיסמה זמנית חזקה)
+      - key: CORS_ORIGINS
+        value: https://app.etaniv.co.il
+
+  # ---- אפליקציית ה-PWA (אתר סטטי) ----
+  - type: web
+    name: etaniv-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://api.etaniv.co.il/api
+    routes:
+      - type: rewrite          # ניתוב SPA — כל הנתיבים ל-index.html
+        source: /*
+        destination: /index.html
