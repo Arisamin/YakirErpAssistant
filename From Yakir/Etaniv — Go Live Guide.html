@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)file:///C:/Users/Yakir%20Eytan/Downloads/etaniv-go-live-guide_1.html -->
+<html lang="en" dir="ltr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etaniv — Go Live Guide</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --ink:#1a2332; --muted:#6b7688;
+    --brand:#1f5f8b; --brand2:#2c7bb0; --accent:#e08a2b; --green:#1f9d6b;
+    --line:#e5e9f0; --soft:#f0f4f8; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Helvetica Neue",sans-serif;
+    line-height:1.6;font-size:15.5px}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 20px 80px}
+  header.top{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .logo{width:44px;height:44px;flex:0 0 auto}
+  h1{font-size:25px;margin:0;font-weight:800;letter-spacing:-.3px}
+  .tagline{color:var(--muted);font-size:13.5px;margin:2px 0 0}
+  .hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+    border-radius:16px;padding:20px 22px;margin:18px 0 6px;box-shadow:0 10px 30px rgba(31,95,139,.25)}
+  .hero h2{margin:0 0 8px;font-size:17px}
+  .hero p{margin:0;opacity:.95;font-size:14px}
+  .facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .fact{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+    border-radius:10px;padding:8px 12px;font-size:13px}
+  .fact b{display:block;font-size:15px}
+  .note{background:#fff;border:1px solid var(--line);border-inline-start:4px solid var(--green);
+    border-radius:12px;padding:14px 16px;margin:18px 0;font-size:14.5px}
+  .note.warn{border-inline-start-color:var(--accent)}
+  .note.crit{border-inline-start-color:var(--red)}
+  .note b{color:var(--ink)}
+  section.step{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:20px 22px;margin:16px 0;box-shadow:0 2px 10px rgba(20,40,80,.04)}
+  .step-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .num{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .step-h h3{margin:0;font-size:18px}
+  .step-h .meta{margin-inline-start:auto;font-size:12px;color:var(--muted);text-align:end}
+  ol.tasks, ul.tasks{margin:10px 0 0;padding:0;list-style:none}
+  ol.tasks li, ul.tasks li{position:relative;padding:9px 0 9px 30px;border-top:1px dashed var(--line)}
+  ol.tasks li:first-child, ul.tasks li:first-child{border-top:none}
+  .chk{position:absolute;inset-inline-start:0;top:11px;width:18px;height:18px;cursor:pointer;accent-color:var(--green)}
+  li.done{opacity:.5}
+  li.done .txt{text-decoration:line-through}
+  code{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:2px 7px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;
+    direction:ltr;display:inline-block}
+  .cmd{background:#0f2136;color:#dbe7f2;border-radius:10px;padding:12px 14px;margin:10px 0;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;direction:ltr;overflow:auto}
+  .cmd .c{color:#7fd1a8}
+  .he{direction:rtl;unicode-bidi:isolate}
+  a{color:var(--brand2);font-weight:600}
+  .pill{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:999px;
+    padding:1px 9px;font-size:12px;color:var(--muted);font-weight:600}
+  .tag-ok{background:#e8f7f0;color:var(--green);border-color:#bfe8d5}
+  .cost{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  .cost th,.cost td{border:1px solid var(--line);padding:8px 10px;text-align:start}
+  .cost th{background:var(--soft)}
+  .cost td.n{text-align:end;font-variant-numeric:tabular-nums}
+  .bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:4px}
+  .prog{height:10px;background:var(--soft);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .prog > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),#37c08a);transition:width .3s}
+  .prog-label{font-size:12px;color:var(--muted);margin-top:4px}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  button.act{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:9px 16px;
+    font-size:14px;font-weight:700;cursor:pointer}
+  button.act.ghost{background:#fff;color:var(--brand);border:1px solid var(--line)}
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
+  @media print{ .bar,.btns{display:none} body{background:#fff} section.step{box-shadow:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <svg class="logo" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 5C20 5 12 17 12 24a8 8 0 0016 0C28 17 20 5 20 5z" fill="#1f5f8b"></path><circle cx="25" cy="13" r="3.4" fill="#e08a2b"></circle></svg>
+    <div>
+      <h1>Going Live on the Internet</h1>
+      <p class="tagline">Etaniv Project-Financial Management System · step-by-step guide for Yakir</p>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="prog"><i id="pbar" style="width: 0%;"></i></div>
+    <div class="prog-label"><span id="pcount">0</span> of <span id="ptotal">29</span> steps done</div>
+  </div>
+
+  <div class="hero">
+    <h2>What we're doing — and the good news</h2>
+    <p>Your login with <b>username + password</b> and <b>two-step verification (2FA)</b> is <b>already built in</b> — nothing to add there. This guide just puts the system online so people can use it from a browser. Everything technical is already prepared in the code (the <code>render.yaml</code> file); you'll mostly be clicking.</p>
+    <div class="facts">
+      <div class="fact"><b>~45–60 min</b>first-time setup</div>
+      <div class="fact"><b>~$14 / month</b>server $7 + database $7 · app is free</div>
+      <div class="fact"><b>Frankfurt (EU)</b>data location</div>
+      <div class="fact"><b>Render.com</b>hosting (already configured)</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Why not host it like the etaniv.co.il website?</b> Your marketing website is a <i>static</i> site — just files on a host. This system is a live <i>application</i>: it needs a <b>database</b> (to store your confidential financial data), a <b>server that runs 24/7</b> (to enforce the login, permissions and calculations), and the app screens. A plain website host can't run those, which is why we use Render — it provides all three in one place.
+  </div>
+
+  <!-- STEP 0 -->
+  <section class="step">
+    <div class="step-h"><div class="num">0</div><h3>Before you start — accounts &amp; files</h3><div class="meta">~10 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">Unzip <code>etaniv-app.zip</code> (the file I sent you) into a folder on your computer — remember where it is.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Create a free <b>GitHub</b> account at <a href="https://github.com/" target="_blank" rel="noreferrer">github.com</a> (this is where the code lives — private).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Create a <b>Render</b> account at <a href="https://render.com/" target="_blank" rel="noreferrer">render.com</a> — choose <b>“Sign up with GitHub”</b> so they connect easily.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Have a <b>credit card</b> ready (for the paid server + database) and access to where you manage the <b>etaniv.co.il</b> domain (optional, for custom addresses).</span></li>
+    </ul>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="step">
+    <div class="step-h"><div class="num">1</div><h3>Put the code on GitHub (no commands — using GitHub Desktop)</h3><div class="meta">~10 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">Download <b>GitHub Desktop</b> from <a href="https://desktop.github.com/" target="_blank" rel="noreferrer">desktop.github.com</a>, install it, and sign in with your GitHub account.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">In GitHub Desktop: <b>File → New repository</b>. Name it <code>etaniv-app</code>, pick any location, click <b>Create repository</b>.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Open that new <code>etaniv-app</code> folder on your computer and <b>copy all the unzipped files into it</b> (the <code>server</code>, <code>web</code> folders, <code>render.yaml</code>, etc.).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Back in GitHub Desktop you'll see all the files listed. At the bottom-left type a message like <code>Etaniv system v1</code> and click <b>Commit to main</b>.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Click <b>Publish repository</b>. <b>✔ Keep the box “Keep this code private” checked.</b> Publish.</span></li>
+    </ul>
+    <div class="note warn"><b>Tip:</b> this GitHub step is the only slightly technical part. If you have a tech-savvy friend, this is the one place they could save you 10 minutes. Everything after is clicking in Render.</div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step">
+    <div class="step-h"><div class="num">2</div><h3>Deploy on Render (it reads the blueprint and builds everything)</h3><div class="meta">~10 min + build</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">Log in to <a href="https://dashboard.render.com/" target="_blank" rel="noreferrer">dashboard.render.com</a>. Click <b>New +</b> → <b>Blueprint</b>.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Connect GitHub and give Render access to your <code>etaniv-app</code> repository (you can limit it to just that repo). Select it.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Render finds <code>render.yaml</code> and shows 3 things it will create: <b>etaniv-db</b> (database), <b>etaniv-api</b> (server), <b>etaniv-web</b> (the app).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">It will ask you to enter <b>ADMIN_PASSWORD</b>. Type a <b>strong temporary password</b> and write it down — it's your first manager login (you'll change it in Step 6).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Click <b>Apply / Create</b>. Add your card if prompted. The first build takes about <b>5–10 minutes</b> — wait until <b>etaniv-api</b> shows <span class="pill tag-ok">Live</span>.</span></li>
+    </ul>
+    <div class="note"><b>Already handled for you:</b> the security keys (JWT secrets) are generated automatically, the database tables are created automatically on first start, and the server is set to a paid plan so it never “sleeps.”</div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step">
+    <div class="step-h"><div class="num">3</div><h3>Upgrade the database to a paid plan — do it the same day</h3><div class="meta">~3 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">In the Render dashboard open <b>etaniv-db</b> → look for <b>Plan</b> (or Settings).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Change it from Free to a paid plan (the <b>Basic ~$7/month</b> tier is plenty to start). This <b>keeps your data</b> and turns on <b>automatic daily backups</b>.</span></li>
+    </ul>
+    <div class="note crit"><b>Important:</b> a free database on Render <b>expires 30 days after it's created</b> (then a 14-day grace period). For real financial data you don't want that risk — upgrade now, on day one, and you're safe with backups.</div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step">
+    <div class="step-h"><div class="num">4</div><h3>Load your real data (one-time)</h3><div class="meta">~3 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">Open <b>etaniv-api</b> → the <b>Shell</b> tab (a black command box inside Render).</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Type this and press Enter:</span>
+        <div class="cmd"><span class="c">$</span> node dist/prisma/seed.js</div>
+      </li>
+      <li><input type="checkbox" class="chk"><span class="txt">Wait for <span class="he">“הזריעה הושלמה בהצלחה”</span>. This loads roles &amp; permissions, your <b>756 suppliers</b> + <b>172 customers</b>, and your manager account.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Later, inside the app, delete the 3 sample projects (101/102/103) and 5 sample workers (as we discussed) so the system is fully clean of demo data.</span></li>
+    </ul>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step">
+    <div class="step-h"><div class="num">5</div><h3>Your web addresses (test now, custom domain optional)</h3><div class="meta">~10 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt"><b>Test immediately:</b> Render gives each service a free address like <code>etaniv-web.onrender.com</code> — open it to check the system works before touching your domain.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt"><b>For your own addresses</b> (recommended): in <b>etaniv-api</b> → Settings → <b>Custom Domains</b> add <code>api.etaniv.co.il</code>; in <b>etaniv-web</b> add <code>app.etaniv.co.il</code>.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Render shows a DNS record (a <b>CNAME</b>) for each — add those two records where you manage <b>etaniv.co.il</b> DNS. HTTPS/SSL is then issued automatically.</span></li>
+    </ul>
+    <div class="note"><b>Good to know:</b> the blueprint already expects exactly <code>app.etaniv.co.il</code> and <code>api.etaniv.co.il</code>, so if you use those names, no extra settings are needed. If you pick different names, tell me and I'll adjust two values (<code>CORS_ORIGINS</code> and <code>VITE_API_URL</code>).</div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step">
+    <div class="step-h"><div class="num">6</div><h3>First login &amp; lock it down (most important step)</h3><div class="meta">~5 min</div></div>
+    <ul class="tasks">
+      <li><input type="checkbox" class="chk"><span class="txt">Open your app address and log in with <code>yakir@etaniv.co.il</code> + the temporary password from Step 2.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt"><b>Change your password</b> right away to a strong, private one.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt"><b>Turn on Two-Step Verification (2FA):</b> scan the QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code to confirm.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt">Add your other users in the <b>Permissions</b> screen and assign each a role — every user can (and should) enable their own 2FA.</span></li>
+    </ul>
+  </section>
+
+  <!-- COST + ONGOING -->
+  <section class="step">
+    <div class="step-h"><div class="num">$</div><h3>Costs &amp; ongoing</h3></div>
+    <table class="cost">
+      <thead><tr><th>Item</th><th>Plan</th><th class="n">Approx / month</th></tr></thead>
+      <tbody>
+        <tr><td>Server (API)</td><td>Starter</td><td class="n">$7</td></tr>
+        <tr><td>Database (Postgres)</td><td>Basic</td><td class="n">$7</td></tr>
+        <tr><td>App (static site)</td><td>Free</td><td class="n">$0</td></tr>
+        <tr><td><b>Total</b></td><td></td><td class="n"><b>≈ $14</b></td></tr>
+      </tbody>
+    </table>
+    <ul class="tasks" style="margin-top:14px">
+      <li><input type="checkbox" class="chk"><span class="txt"><b>Backups:</b> included automatically with the paid database — your accounting data is protected.</span></li>
+      <li><input type="checkbox" class="chk"><span class="txt"><b>Future updates:</b> when we improve the code, you commit &amp; push in GitHub Desktop and Render redeploys automatically — no downtime for you to manage.</span></li>
+    </ul>
+    <div class="note warn" style="margin-top:14px"><b>Prices verified Sep 2026</b> and may change — Render shows the exact amount before you confirm any plan. See sources at the bottom.</div>
+  </section>
+
+  <div class="btns">
+    <button class="act" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button class="act ghost" onclick="document.querySelectorAll('.chk').forEach(c=&gt;{c.checked=false;c.dispatchEvent(new Event('change'))})">Reset checklist</button>
+  </div>
+
+  <footer>
+    © 2026 אתניב ב.י בע"מ — confidential. Prepared as a setup guide.<br>
+    Sources: Render pricing &amp; free-tier terms (verified Sep 2026):
+    <a href="https://render.com/docs/free" target="_blank" rel="noreferrer">render.com/docs/free</a>,
+    <a href="https://deployhandbook.com/pricing/render" target="_blank" rel="noreferrer">Render pricing summary</a>.
+  </footer>
+</div>
+
+<script>
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.chk'));
+  var total = boxes.length;
+  document.getElementById('ptotal').textContent = total;
+  function refresh(){
+    var done = boxes.filter(function(b){return b.checked;}).length;
+    document.getElementById('pcount').textContent = done;
+    document.getElementById('pbar').style.width = (total? (done/total*100):0) + '%';
+  }
+  boxes.forEach(function(b){
+    b.addEventListener('change', function(){
+      b.closest('li').classList.toggle('done', b.checked);
+      refresh();
+    });
+  });
+  refresh();
+</script>
+
+
+</body></html>
