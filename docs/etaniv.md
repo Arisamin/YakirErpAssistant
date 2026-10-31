@@ -417,4 +417,32 @@ The database schema (`server/prisma/schema.prisma`) comprises **18 relational ta
 - **`UserStatus`**: `PENDING` (awaiting admin approval) | `APPROVED` (active) | `DISABLED` (deactivated).
 - **`DocType`**: `ESEK` (*חשבון עסקה* / Proforma) | `TAX` (*חשבונית מס* / Tax Invoice) | `TAX_RECEIPT` (*חשבונית מס-קבלה* / Tax Invoice & Receipt).
 
+---
+
+## 7. Current Infrastructure, Web Hosting & DNS Management (`etaniv.co.il`)
+
+Analysis of Yakir's deployment documentation combined with live technical network verification reveals the current production domain infrastructure:
+
+### 1. DNS Authority & Management
+- **Nameservers:**
+  - `ns1.bdm.microsoftonline.com`
+  - `ns2.bdm.microsoftonline.com`
+  - `ns3.bdm.microsoftonline.com`
+  - `ns4.bdm.microsoftonline.com`
+- **DNS Host / Management Console:** **Microsoft 365 / Azure DNS (Business Domain Management)**.
+- **Operational Reality:** Yakir manages his DNS records directly inside the **Microsoft 365 Admin Center** (tied to the corporate Microsoft 365 / Exchange email accounts such as `yakir@etaniv.co.il`).
+
+### 2. Current Website Hosting
+- **Apex & WWW Records:** `etaniv.co.il` / `www.etaniv.co.il` resolves to IP `212.199.178.4` (AS12400 Partner Communications, Petah Tikva, Israel; host `server1.abrahamson.co.il`).
+- **Web Stack:** Linux server running **Nginx** reverse proxy and **WordPress** with a custom Elementor theme.
+
+### 3. Subdomain Configuration for Render Deployment
+Per `DEPLOY.md` and `Etaniv — Go Live Guide.html`, setting up the ERP system does **not** interrupt or affect the existing WordPress marketing site:
+1. Yakir logs into **Microsoft 365 Admin Center** → **Settings** → **Domains** → `etaniv.co.il` → **DNS Records**.
+2. Adds two new `CNAME` records:
+   - `app` → Render Static Site address (pointing to `etaniv-web.onrender.com`).
+   - `api` → Render Web Service address (pointing to `etaniv-api.onrender.com`).
+3. Render automatically issues and renews Let's Encrypt SSL/TLS certificates for both subdomains.
+
+
 
