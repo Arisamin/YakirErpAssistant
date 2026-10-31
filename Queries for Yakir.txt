@@ -2,3 +2,5 @@
 2) What is the operating mode with Hash'?
 3) What are the roles for people working with Hash' and accounting
 4) is there domain controller in the company site today?
+5) How was the job done until today before the new app?
+6) 

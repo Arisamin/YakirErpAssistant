@@ -144,9 +144,17 @@ etaniv-app_21/
 
 ---
 
-## 4. Recommended Path Forward
+## 4. System Architecture Diagrams & Sequence Flows
+
+For complete, detailed Mermaid diagrams of the code architecture and all 6 core business flows (Authentication/2FA, 3-Way Matching, Hashavshevet Export, Masav Payouts, Progressive Contracts & Labor Profitability), see:
+👉 [**Etaniv Architecture Block Diagram & End-to-End Sequence Flows (`docs/etaniv.md`)**](./etaniv.md).
+
+---
+
+## 5. Recommended Path Forward
 
 1. **Adopt the Etaniv Model:** Align all system architecture and data models around the Etaniv Project Management System (`etaniv-app`).
 2. **Execute Render.com Deployment:** Use `render.yaml` to deploy `etaniv-api`, `etaniv-db`, and `etaniv-web` to Render at ~$14/month, connected to `app.etaniv.co.il` and `api.etaniv.co.il`.
 3. **Integrate AI Ingestion as Phase 2:** Once the live portal is running on Render, add our multimodal AI extraction engine as an automated ingest worker that populates Etaniv's supplier invoice intake queue.
+
 
