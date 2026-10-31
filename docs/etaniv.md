@@ -444,5 +444,40 @@ Per `DEPLOY.md` and `Etaniv — Go Live Guide.html`, setting up the ERP system d
    - `api` → Render Web Service address (pointing to `etaniv-api.onrender.com`).
 3. Render automatically issues and renews Let's Encrypt SSL/TLS certificates for both subdomains.
 
+---
+
+## 8. Real-World Architecture Context: How the Current Setup Came to Be
+
+For developers unfamiliar with corporate domain and email administration, here is the real-world sequence of how Yakir's current infrastructure was configured:
+
+```
+[ Domain Registrar (e.g., LiveDNS / Box) ]
+                     │  (Delegates NS authority)
+                     ▼
+[ Microsoft 365 / Azure DNS (ns1-4.bdm.microsoftonline.com) ]
+        │                                         │
+        │ MX, SPF, DKIM, Teams                    │ A Record (etaniv.co.il / www)
+        ▼                                         ▼
+[ Exchange Online (@etaniv.co.il) ]    [ Israeli VPS (212.199.178.4) ]
+                                       [ Nginx + Self-Hosted WordPress ]
+```
+
+1. **Domain Registration:**
+   Yakir registered the primary domain `etaniv.co.il` via an accredited Israeli domain registrar (e.g., LiveDNS, Box, SPD).
+2. **Corporate Email Setup (The Microsoft 365 Step):**
+   When setting up corporate Microsoft 365 for business email (`yakir@etaniv.co.il`), Microsoft's onboarding wizard gives two options:
+   - *Option A (Automated DNS Delegation):* Point domain nameservers to Microsoft (`ns1-4.bdm.microsoftonline.com`).
+   - *Option B (Manual DNS Records):* Keep external DNS and manually insert over 10 MX, SPF, DKIM, and autodiscover records.
+   Yakir (or his IT support) chose Option A so Microsoft handles all Exchange email routing and security records automatically.
+3. **Self-Hosted WordPress Website:**
+   Unlike `WordPress.com` (a closed SaaS platform), Yakir uses **self-hosted WordPress (`WordPress.org`)**, built with Elementor. A web development agency deployed this site onto an independent Linux server in Petah Tikva (`212.199.178.4`, Partner Communications).
+4. **Linking Website to Domain:**
+   Inside the **Microsoft 365 Admin Center**, an `A` record was added pointing `etaniv.co.il` and `www.etaniv.co.il` to `212.199.178.4`.
+5. **Key Takeaway for Etaniv ERP Assistant:**
+   - Email and DNS are centrally anchored in Microsoft 365.
+   - The WordPress marketing site is isolated on an external server.
+   - Creating new subdomains (`app.etaniv.co.il`, `api.etaniv.co.il`) in Microsoft 365 for Render poses **zero risk** of downtime or disruption to either corporate email or the live WordPress website.
+
+
 
 
