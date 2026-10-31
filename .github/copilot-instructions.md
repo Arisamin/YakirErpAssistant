@@ -28,4 +28,10 @@
 - **Never Push to Git Without Explicit User Approval:** Under no circumstances should Copilot execute `git push` to any remote repository without first explicitly asking for and receiving approval from the user.
 - **Local Git Allowed, Remote Push Gated:** Local operations (`git status`, `git diff`, `git add`, `git commit`) can be performed when requested or helpful, but `git push` is strictly prohibited unless the user has explicitly given permission in that specific interaction.
 
+## 5. System Architecture Topography & Mental Model Rule
+- **Physical/Account Topography First:** When drawing block diagrams or explaining system architecture, always group components primarily by their **physical/conceptual hosting locations and single accounts** (e.g. User Devices, Microsoft 365, Render Account, On-Premises Windows Desktop, Banking Network).
+- **No False Account/Location Separation:** Never represent components that run under the same account and physical datacenter (e.g. Render Web API + Render PostgreSQL DB) as completely separate disconnected top-level blocks that could mislead the developer into thinking they exist in separate accounts or environments.
+- **Sub-blocks within Location Containers:** Separate different runtime engines or tiers (e.g. Docker API runtime vs. PostgreSQL DB storage) as **sub-blocks inside their shared hosting/account container**.
+
+
 

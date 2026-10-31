@@ -61,54 +61,71 @@ It is structured as a full-stack TypeScript monorepo:
 
 ## 5. System Architecture Block Diagram (`etaniv-app_21`)
 
-*This diagram illustrates the actual architecture implemented across the code in `etaniv-app_21`, its containerization, hosting platforms, database layer, and external integrations.*
+*This diagram illustrates the physical and conceptual topography of the system. All cloud services run within a **single Render account** in the **Frankfurt (EU)** region.*
 
 ```mermaid
 graph LR
-    subgraph CLIENT_TIER ["💻 Client Tier (User Devices)"]
+    subgraph LOCATION_CLIENT ["👤 1. User Physical Endpoints (Desktop / Mobile)"]
         direction TB
-        PWA_APP["<b>Etaniv PWA Frontend</b><br/>• React + TypeScript + Vite<br/>• Hebrew RTL UI<br/>• PWA Service Worker<br/>• Host: Chrome / Edge / Mobile"]
-        AUTH_APP["<b>Authenticator App</b><br/>• Google / MS Authenticator<br/>• TOTP RFC 6238"]
+        PWA_APP["<b>Etaniv PWA Frontend Client</b><br/>• React + TypeScript + Vite<br/>• Hebrew RTL UI<br/>• Chrome / Edge / Mobile PWA"]
+        AUTH_APP["<b>Mobile Authenticator App</b><br/>• Google / Microsoft Authenticator<br/>• TOTP RFC 6238 Generator"]
     end
 
-    subgraph INGRESS_TIER ["🌐 Network & Routing Tier"]
+    subgraph LOCATION_M365 ["☁️ 2. Microsoft 365 Account (Domain & DNS Authority)"]
         direction TB
-        DNS_ROUTER["<b>DNS Zone (etaniv.co.il)</b><br/>• CNAME: app.etaniv.co.il<br/>• CNAME: api.etaniv.co.il"]
-        RENDER_EDGE["<b>Render Global Edge</b><br/>• Automated SSL/TLS (Let's Encrypt)<br/>• CORS Gateway<br/>• Static Asset CDN"]
+        DNS_ZONE["<b>Microsoft 365 DNS Manager</b><br/>• Domain: etaniv.co.il<br/>• CNAME app ➔ Render Web<br/>• CNAME api ➔ Render Docker API<br/>• A-Record ➔ WP Marketing Site"]
     end
 
-    subgraph APP_TIER ["⚙️ Backend API Tier (Render Frankfurt - Docker)"]
+    subgraph LOCATION_RENDER ["☁️ 3. Render Cloud Platform (Single Account · Frankfurt EU)"]
         direction TB
-        EXPRESS_APP["<b>Express Application Server</b><br/>• Node.js + TypeScript Runtime<br/>• Docker Container (server/Dockerfile)"]
-        AUTH_MDW["<b>Security & RBAC Middleware</b><br/>• JWT Access & Refresh Engine<br/>• Role Enforcement (admin/finance/pm/viewer)<br/>• Audit Logger"]
-        APP_MODULES["<b>14 Business Logic Modules</b><br/>• projects, suppliers, supplierInvoices<br/>• payments (Masav), hashavshevet<br/>• contracts, billingDocs, collections<br/>• labor, overview, reports, settings"]
+        
+        subgraph RENDER_EDGE_BOX ["🌐 Render Edge Network (Front-Door)"]
+            RENDER_ROUTER["<b>Render Ingress & SSL Router</b><br/>• Automated Let's Encrypt TLS<br/>• Global CDN for Static PWA<br/>• CORS & Port Forwarding"]
+        end
+
+        subgraph RENDER_SERVICES_BOX ["⚙️ Cloud Services (Internal Private Network)"]
+            direction LR
+            
+            subgraph SERVICE_WEB ["📄 Static Web Service (etaniv-web)"]
+                STATIC_FILES["<b>Vite Production Bundle</b><br/>• Static HTML/JS/CSS<br/>• Free Tier Hosting<br/>• app.etaniv.co.il"]
+            end
+
+            subgraph SERVICE_API ["🐳 Docker Web Service (etaniv-api)"]
+                API_RUNTIME["<b>Node.js / Express Server</b><br/>• Starter Plan ($7/mo)<br/>• 14 Business Modules<br/>• JWT & RBAC Engine<br/>• api.etaniv.co.il"]
+            end
+
+            subgraph SERVICE_DB ["🗄️ Managed Database Service (etaniv-db)"]
+                DB_ENGINE[("<b>PostgreSQL 16 Engine</b><br/>• Standard Plan ($7/mo)<br/>• 18 Relational Tables<br/>• 756 Real Suppliers<br/>• 172 Real Customers<br/>• Persistent Disk")]
+            end
+        end
+
+        RENDER_ROUTER -->|"HTTPS /"| STATIC_FILES
+        RENDER_ROUTER -->|"HTTPS /api/*"| API_RUNTIME
+        API_RUNTIME <-->|"Private WireGuard Network<br/>DATABASE_URL (No Internet Expose)"| DB_ENGINE
     end
 
-    subgraph DATA_TIER ["🗄️ Database Tier (Render Frankfurt - Managed)"]
+    subgraph LOCATION_OFFICE ["🏢 4. Yakir's Office On-Premises (Local Windows PC)"]
         direction TB
-        PRISMA_ORM["<b>Prisma ORM Client</b><br/>• Type-safe query engine<br/>• Migrations & Seed runner"]
-        POSTGRES_DB[("<b>PostgreSQL 16 Database</b><br/>• 16 relational models<br/>• 756 pre-seeded suppliers<br/>• 172 pre-seeded customers<br/>• Automated daily backups")]
+        HASH_CLIENT["<b>Hashavshevet ERP Desktop</b><br/>• Native Windows Application<br/>• 'קליטת פקודות יומן מאקסל'<br/>• Reads exported .xlsx files"]
     end
 
-    subgraph EXTERNAL_TIER ["🏢 External & Banking Systems"]
+    subgraph LOCATION_BANKING ["🏦 5. Israeli Banking Network (External Clearing)"]
         direction TB
-        HASH_ERP["<b>Hashavshevet ERP Desktop</b><br/>• On-premise Windows client<br/>• 'קליטת פקודות יומן מאקסל'<br/>• Open Batch (מנה פתוחה)"]
-        MASAV_SYS["<b>Masav Clearing House (מס''ב)</b><br/>• Israeli interbank transfer network<br/>• Electronic supplier payouts"]
+        MASAV_PORTAL["<b>Masav Clearing House (מס''ב)</b><br/>• Bank corporate business portal<br/>• Processes ASCII transfer files"]
     end
 
-    %% High-level data links
-    CLIENT_TIER -->|"1. HTTPS Requests"| INGRESS_TIER
-    INGRESS_TIER -->|"2. Static Web Assets"| PWA_APP
-    INGRESS_TIER -->|"3. REST API Calls"| EXPRESS_APP
-    PWA_APP -.->|"TOTP 6-digit Code"| AUTH_APP
-    EXPRESS_APP --> AUTH_MDW
-    AUTH_MDW --> APP_MODULES
-    APP_MODULES --> PRISMA_ORM
-    PRISMA_ORM --> POSTGRES_DB
-    APP_MODULES -.->|"Export Excel (.xlsx)"| PWA_APP
-    PWA_APP -.->|"Manual File Selection"| HASH_ERP
-    APP_MODULES -.->|"Generate Masav File"| PWA_APP
-    PWA_APP -.->|"Upload to Bank Portal"| MASAV_SYS
+    %% High-level data paths between locations
+    LOCATION_CLIENT -->|"1. User accesses app.etaniv.co.il / api.etaniv.co.il"| LOCATION_M365
+    LOCATION_M365 -->|"2. DNS CNAME resolution"| LOCATION_RENDER
+    LOCATION_CLIENT <-->|"3. Authenticated PWA & REST API Traffic"| LOCATION_RENDER
+    PWA_APP -.->|"TOTP 6-digit verification"| AUTH_APP
+    
+    %% Export and integration paths
+    SERVICE_API -.->|"Downloads generated .xlsx"| PWA_APP
+    PWA_APP -.->|"Upload to desktop app"| HASH_CLIENT
+    
+    SERVICE_API -.->|"Downloads Masav ASCII file"| PWA_APP
+    PWA_APP -.->|"Upload to bank portal"| MASAV_PORTAL
 ```
 
 ---
