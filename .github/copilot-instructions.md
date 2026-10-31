@@ -24,3 +24,8 @@
   4. Answering questions and updating the accounting dictionary.
 - **Permission Gate:** Before writing any actual application code or installing any packages, explicitly ask the user for permission and await their explicit consent.
 
+## 4. Strict Git Push Guardrail
+- **Never Push to Git Without Explicit User Approval:** Under no circumstances should Copilot execute `git push` to any remote repository without first explicitly asking for and receiving approval from the user.
+- **Local Git Allowed, Remote Push Gated:** Local operations (`git status`, `git diff`, `git add`, `git commit`) can be performed when requested or helpful, but `git push` is strictly prohibited unless the user has explicitly given permission in that specific interaction.
+
+
