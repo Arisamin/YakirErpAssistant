@@ -537,6 +537,33 @@ For developers unfamiliar with corporate domain and email administration, here i
    - The WordPress marketing site is isolated on an external server.
    - Creating new subdomains (`app.etaniv.co.il`, `api.etaniv.co.il`) in Microsoft 365 for Render poses **zero risk** of downtime or disruption to either corporate email or the live WordPress website.
 
+---
+
+## 9. Open Issues, Architectural Gaps & Production Vulnerabilities
+
+This section documents critical functional, technical, and regulatory gaps identified in the current `etaniv-app_21` design and implementation that require resolution before or immediately following production go-live:
+
+### 1. Technical & Cloud Infrastructure Gaps
+
+| # | Gap / Vulnerability | Root Cause in Code / Architecture | Production Impact & Risk | Required Resolution |
+|---|---|---|---|---|
+| **T-1** | **Ephemeral Docker Storage & File Loss** | `FileAsset` model exists in `schema.prisma`, but actual file upload endpoints are unimplemented in Express (`server/src/modules/`). The Docker container filesystem is strictly ephemeral. | If files are uploaded to the local container disk, they are permanently destroyed on every deployment, restart, or container crash. | Connect upload ingestion directly to an external object store (e.g., **Cloudflare R2** / **AWS S3**) via pre-signed URLs, or attach a Render Persistent Disk. |
+| **T-2** | **Disaster Recovery & 7-Year Accounting Retention** | Render's managed PostgreSQL automated daily snapshots have a rolling **7-day retention window**. Free tier databases expire and delete after 30 days. | Israeli Tax Ordinance (*הוראות ניהול ספרים*) legally mandates preserving accounting records for at least **7 years**. If catastrophic corruption or silent deletion exceeds 7 days, data is unrecoverable. | Implement an automated daily/weekly cron task running `pg_dump`, encrypting the archive, and streaming it to immutable cold storage (e.g., AWS S3 Glacier / Cloudflare R2). |
+| **T-3** | **Observability, APM & Error Alerting** | Errors log only to `stdout` via `pino-http` and `console.error(err)` in `middleware/error.ts`. Audit logging failures in `audit.ts` fail silently. | Production errors require manually checking Render log streams. No proactive notifications (Slack, email, SMS) alert Yakir or developers when API endpoints fail or database connections drop. | Integrate an error monitoring service (e.g., **Sentry**) and configure uptime alerting on `/api/health`. |
+| **T-4** | **Unimplemented Automated AI / OCR Extraction** | `etaniv-app_21` currently relies on manual employee data entry for vendor invoices, line splitting, and tax amounts. | The original goal—drastically reducing the time 3 employees spend manually typing invoices—is only partially solved. Manual data entry remains a operational bottleneck. | Implement the multimodal AI extraction pipeline (Hebrew OCR + Vision LLM) to auto-populate invoice fields, perform Luhn checksums, and auto-split VAT. |
+
+---
+
+### 2. Israeli Accounting & Regulatory Compliance Gaps
+
+| # | Gap / Vulnerability | Regulatory Requirement (*חקיקה ותקינה*) | Production Impact & Risk | Required Resolution |
+|---|---|---|---|---|
+| **A-1** | **Missing Israel Invoicing Clearance (*חוק החשבוניות / מספר הקצאה*)** | Invoices exceeding statutory thresholds (25,000 ₪ in 2024, descending toward 5,000 ₪) require real-time Israel Tax Authority clearance numbers (*מספר הקצאה*). | Without a valid Tax Authority allocation number, Etaniv is **legally barred from deducting Input VAT (*מע"מ תשומות*)**, risking heavy tax authority penalties. | Integrate with the Israel Tax Authority B2B Allocation REST API to validate supplier allocation numbers before invoice approval. |
+| **A-2** | **Withholding Tax Verification (*ניכוי מס במקור ואישור ניהול ספרים*)** | Israeli law mandates withholding tax at source from supplier payments unless the supplier possesses a valid exemption certificate (*אישור ניכוי מס במקור*). | Generating bulk bank payouts via Masav without verifying withholding rates creates legal tax liability for Etaniv to pay the withheld tax out-of-pocket. | Connect supplier tax verification to the SHAAM (*שע"ם*) B2B web service to dynamically check and apply current withholding tax percentages. |
+| **A-3** | **One-Way Asynchronous Sync with Hashavshevet** | System exports an Excel batch (`.xlsx`) to Hashavshevet's open batch (*מנה פתוחה*), but has no reverse synchronization. | If the bookkeeper modifies, reclassifies, or rejects an invoice inside Hashavshevet desktop, `etaniv-app_21` remains unaware and presents stale or contradictory figures. | Establish a reconciliation import process (or periodic batch status sync) so Hashavshevet transaction statuses reflect back into Etaniv. |
+| **A-4** | **Manual Bank Statement Reconciliation (*התאמות בנקים*)** | Electronic payouts are pushed via Masav, but reconciling bank statements back against approved invoices is completely manual. | Reconciling cash flow and verifying whether cheques, direct debits, or transfers actually cleared requires manual human audit. | Add a bank statement parser (supporting Israeli bank Excel / OFX formats) to automate ledger matching (*התאמת תנועות בנק*). |
+
+
 
 
 
