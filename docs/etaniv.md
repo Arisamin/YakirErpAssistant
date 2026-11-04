@@ -9,6 +9,28 @@
 
 ---
 
+## Table of Contents
+1. [Executive Summary: What is the `etaniv-app_21` Code?](#1-executive-summary-what-is-the-etaniv-app_21-code)
+2. [Relationship to the Single-File HTML POC](#2-relationship-to-the-single-file-html-poc)
+3. [How It Fits Into the Go-Live Plan](#3-how-it-fits-into-the-go-live-plan)
+4. [Uncovered Real-World Business Workflows](#4-uncovered-real-world-business-workflows)
+5. [System Architecture Block Diagram (`etaniv-app_21`)](#5-system-architecture-block-diagram-etaniv-app_21)
+6. [End-to-End Sequence Diagrams for All App Flows](#6-end-to-end-sequence-diagrams-for-all-app-flows)
+   - [Flow 1: Authentication, Session Management & 2FA](#flow-1-authentication-session-management--two-factor-authentication-2fa)
+   - [Flow 2: Supplier Invoice Ingestion, Line Splitting & 3-Way Matching](#flow-2-supplier-invoice-ingestion-line-splitting--3-way-matching-approval)
+   - [Flow 3: Hashavshevet Accounting Export & Batch Synchronization](#flow-3-hashavshevet-accounting-export--batch-synchronization)
+   - [Flow 4: Payment Run Scheduling, Masav Bank File Generation & Reconciliation](#flow-4-payment-run-scheduling-masav-bank-file-generation--reconciliation)
+   - [Flow 5: Customer Contracts, Progressive Billing, Retention & Collections](#flow-5-customer-contracts-progressive-billing-retention--collections)
+   - [Flow 6: Labor Tracking & Real-Time Project Profitability Dashboard](#flow-6-labor-tracking--real-time-project-profitability-dashboard)
+7. [Database Schema & Tables Specification (PostgreSQL / Prisma)](#7-database-schema-tables-specification-postgresql--prisma)
+8. [Current Infrastructure, Web Hosting & DNS Management (`etaniv.co.il`)](#8-current-infrastructure-web-hosting--dns-management-etanivcoil)
+9. [Real-World Architecture Context: How the Current Setup Came to Be](#9-real-world-architecture-context-how-the-current-setup-came-to-be)
+10. [Open Issues, Architectural Gaps & Production Vulnerabilities](#10-open-issues-architectural-gaps--production-vulnerabilities)
+11. [Platform Portability, Vendor Independence & 7-Year Cold Backup Architecture](#11-platform-portability-vendor-independence--7-year-cold-backup-architecture)
+12. [Multi-Customer Fleet Management: Health Monitoring & Maintenance Strategy](#12-multi-customer-fleet-management-health-monitoring--maintenance-strategy)
+
+---
+
 ## 1. Executive Summary: What is the `etaniv-app_21` Code?
 
 The folder `From Yakir/etaniv-app_21` (from `etaniv-app_21.zip`) is the **complete production-grade source code** for **אתניב ב.י בע"מ (Etaniv B.Y. Ltd. — Water & Environmental Technologies)**.
@@ -18,6 +40,8 @@ It is structured as a full-stack TypeScript monorepo:
 - **`web/` (Frontend PWA):** React + TypeScript + Vite. Hebrew RTL single-page progressive web app containing all 9 operational modules.
 - **`render.yaml` (Infrastructure as Code):** Render.com Blueprint provisioning the database (`etaniv-db`), API (`etaniv-api`), and web app (`etaniv-web`).
 - **`DEPLOY.md`:** Step-by-step production deployment guide.
+
+[Back to Top / Table of Contents](#table-of-contents)
 
 ---
 
@@ -29,6 +53,8 @@ It is structured as a full-stack TypeScript monorepo:
 | **Backend & DB** | In-browser mock server (`window.fetch` interceptor) | Real Express REST API + PostgreSQL DB (Prisma ORM) |
 | **Authentication** | Simulated static user tokens (`demo`) | Real cryptographic JWTs + TOTP 2FA (Authenticator app) |
 | **Purpose** | Immediate zero-install browser testing for Yakir | Production deployment to Render.com and ongoing engineering |
+
+[Back to Top / Table of Contents](#table-of-contents)
 
 ---
 
@@ -45,7 +71,7 @@ It is structured as a full-stack TypeScript monorepo:
 5. Add DNS CNAMEs for `app.etaniv.co.il` and `api.etaniv.co.il`.
 6. Total monthly infrastructure cost: **~$14 / month (~50 ₪/mo)**.
 
----
+[Back to Top / Table of Contents](#table-of-contents)
 
 ---
 
@@ -56,6 +82,8 @@ It is structured as a full-stack TypeScript monorepo:
 3. **Israeli Payment Terms (*שוטף פלוס*):** Auto-calculates `payDate` and slots payments into bi-monthly runs (15th & 30th).
 4. **Masav Interbank File Generation (*מס"ב*):** Bulk electronic bank transfers directly to supplier bank accounts.
 5. **Customer Contracts, Retention (*עיכבון*) & Collections (*גיול חובות*):** Manages project revenue, warranty retentions, and debt aging.
+
+[Back to Top / Table of Contents](#table-of-contents)
 
 ---
 
@@ -127,6 +155,8 @@ graph LR
     SERVICE_API -.->|"Downloads Masav ASCII file"| PWA_APP
     PWA_APP -.->|"Upload to bank portal"| MASAV_PORTAL
 ```
+
+[Back to Top / Table of Contents](#table-of-contents)
 
 ---
 
@@ -439,9 +469,11 @@ sequenceDiagram
     Note over Web, Yakir: Project 101 (מתחם מגורים A):<br/>• Income: 1,400,000 ₪<br/>• Materials: 354,000 ₪ | Labor: 176,050 ₪<br/>• Total Cost: 530,050 ₪<br/>• Net Profit: 869,950 ₪ (Gross Margin: 62.1%)<br/>• Budget Utilization: 22.1% of 2,400,000 ₪
 ```
 
+[Back to Top / Table of Contents](#table-of-contents)
+
 ---
 
-## 6. Database Schema & Tables Specification (PostgreSQL / Prisma)
+## 7. Database Schema & Tables Specification (PostgreSQL / Prisma)
 
 The database schema (`server/prisma/schema.prisma`) comprises **18 relational tables** and **2 enums**, architected around project-centric cost accounting (*תמחיר פרויקטים*). Every financial transaction (supplier expense, labor day, billing doc) connects back to a `Project` for real-time profitability tracking.
 
@@ -476,9 +508,11 @@ The database schema (`server/prisma/schema.prisma`) comprises **18 relational ta
 - **`UserStatus`**: `PENDING` (awaiting admin approval) | `APPROVED` (active) | `DISABLED` (deactivated).
 - **`DocType`**: `ESEK` (*חשבון עסקה* / Proforma) | `TAX` (*חשבונית מס* / Tax Invoice) | `TAX_RECEIPT` (*חשבונית מס-קבלה* / Tax Invoice & Receipt).
 
+[Back to Top / Table of Contents](#table-of-contents)
+
 ---
 
-## 7. Current Infrastructure, Web Hosting & DNS Management (`etaniv.co.il`)
+## 8. Current Infrastructure, Web Hosting & DNS Management (`etaniv.co.il`)
 
 Analysis of Yakir's deployment documentation combined with live technical network verification reveals the current production domain infrastructure:
 
@@ -503,9 +537,11 @@ Per `DEPLOY.md` and `Etaniv — Go Live Guide.html`, setting up the ERP system d
    - `api` → Render Web Service address (pointing to `etaniv-api.onrender.com`).
 3. Render automatically issues and renews Let's Encrypt SSL/TLS certificates for both subdomains.
 
+[Back to Top / Table of Contents](#table-of-contents)
+
 ---
 
-## 8. Real-World Architecture Context: How the Current Setup Came to Be
+## 9. Real-World Architecture Context: How the Current Setup Came to Be
 
 For developers unfamiliar with corporate domain and email administration, here is the real-world sequence of how Yakir's current infrastructure was configured:
 
@@ -537,9 +573,11 @@ For developers unfamiliar with corporate domain and email administration, here i
    - The WordPress marketing site is isolated on an external server.
    - Creating new subdomains (`app.etaniv.co.il`, `api.etaniv.co.il`) in Microsoft 365 for Render poses **zero risk** of downtime or disruption to either corporate email or the live WordPress website.
 
+[Back to Top / Table of Contents](#table-of-contents)
+
 ---
 
-## 9. Open Issues, Architectural Gaps & Production Vulnerabilities
+## 10. Open Issues, Architectural Gaps & Production Vulnerabilities
 
 This section documents critical functional, technical, and regulatory gaps identified in the current `etaniv-app_21` design and implementation that require resolution before or immediately following production go-live:
 
@@ -563,9 +601,11 @@ This section documents critical functional, technical, and regulatory gaps ident
 | **A-3** | **One-Way Asynchronous Sync with Hashavshevet** | System exports an Excel batch (`.xlsx`) to Hashavshevet's open batch (*מנה פתוחה*), but has no reverse synchronization. | If the bookkeeper modifies, reclassifies, or rejects an invoice inside Hashavshevet desktop, `etaniv-app_21` remains unaware and presents stale or contradictory figures. | Establish a reconciliation import process (or periodic batch status sync) so Hashavshevet transaction statuses reflect back into Etaniv. |
 | **A-4** | **Manual Bank Statement Reconciliation (*התאמות בנקים*)** | Electronic payouts are pushed via Masav, but reconciling bank statements back against approved invoices is completely manual. | Reconciling cash flow and verifying whether cheques, direct debits, or transfers actually cleared requires manual human audit. | Add a bank statement parser (supporting Israeli bank Excel / OFX formats) to automate ledger matching (*התאמת תנועות בנק*). |
 
+[Back to Top / Table of Contents](#table-of-contents)
+
 ---
 
-## 10. Platform Portability, Vendor Independence & 7-Year Cold Backup Architecture
+## 11. Platform Portability, Vendor Independence & 7-Year Cold Backup Architecture
 
 ### 1. Vendor Lock-In & Portability Assessment (Can We Leave Render?)
 
@@ -621,6 +661,82 @@ Relying on live cloud database snapshots (like Render's 7-day rolling window) is
    Enable **S3 Object Lock** in *Compliance Mode* with a retention period of 7 years. Once written, neither developers, administrators, nor malicious actors can delete or alter the file until the 7-year statutory period expires.
 4. **Physical Document Scans (`FileAsset`):**
    Scanned PDFs and receipt images are stored directly in the external object store (e.g., Cloudflare R2 / AWS S3) rather than on Render's ephemeral container disk, with identical 7-year lifecycle retention rules.
+
+[Back to Top / Table of Contents](#table-of-contents)
+
+---
+
+## 12. Multi-Customer Fleet Management: Health Monitoring & Maintenance Strategy
+
+If managing multiple client installations (e.g., Yakir / Etaniv and subsequent businesses), tracking system health, security vulnerabilities, and software updates across many discrete instances requires a centralized operational model.
+
+### 1. Architecture Models: Single-Tenant vs. Multi-Tenant Fleet
+
+| Model | Architecture | Pros for Accounting Systems | Cons / Overhead |
+|---|---|---|---|
+| **Single-Tenant Fleet (Current Model)** | Each customer (e.g., Etaniv) gets their own isolated Render service, database, domain, and Git branch. | • Complete data isolation (legal/regulatory safety).<br/>• Zero risk of cross-company data leakage.<br/>• Client can retain direct cloud ownership. | • N deployments, N databases, N configurations to patch and monitor. |
+| **Multi-Tenant SaaS (Future Evolution)** | One shared application cluster and database with strict tenant filtering (`tenantId` on every table). | • Single codebase, single deployment, instant fleet updates.<br/>• Lower aggregate infrastructure cost. | • High risk of bugs exposing competitor accounting data.<br/>• Complex tenant backup and restore operations. |
+
+For Israeli construction and accounting systems dealing with sensitive banking, payroll, and tax data, **Single-Tenant isolation is strongly recommended** initially. Fleet tooling can automate visibility across these isolated instances without compromising data segregation.
+
+---
+
+### 2. Centralized Health & Uptime Probing
+
+Instead of logging into separate Render dashboards, use a single centralized monitoring tool (e.g., **BetterStack**, **UptimeRobot**, or **Checkly**):
+
+```
+                       [ Central Monitoring Service ]
+                      (BetterStack / UptimeRobot / Pingdom)
+                                     │
+           ┌─────────────────────────┼─────────────────────────┐
+           ▼                         ▼                         ▼
+[ Customer A (Etaniv) ]   [ Customer B (Contractor X) ]   [ Customer C (Vendor Y) ]
+GET /api/health (60s)     GET /api/health (60s)           GET /api/health (60s)
+• Database ping           • Database ping                 • Database ping
+• Redis/Queue status      • Redis/Queue status            • Redis/Queue status
+• Uptime & Latency        • Uptime & Latency              • Uptime & Latency
+```
+
+- **Unified `/api/health` Contract:**
+  Ensure every client backend implements an identical, lightweight health check:
+  ```json
+  {
+    "status": "healthy",
+    "version": "1.4.2",
+    "uptimeSeconds": 84200,
+    "database": "connected",
+    "latencyMs": 14
+  }
+  ```
+- **Proactive Alerts:**
+  Configure SMS / WhatsApp / PagerDuty alerts to notify the engineer immediately if any client instance drops below 99.9% uptime or reports database connection failure.
+
+---
+
+### 3. Centralized Error Tracking & APM (Sentry Multi-Project)
+
+1. **One Sentry Organization, Dedicated Projects:**
+   Create a single Sentry account with separate projects (`etaniv-prod`, `client2-prod`, `client3-prod`).
+2. **Environment & Release Tagging:**
+   Tag every deployment with git commit SHA and client identifier.
+3. **Weekly Error Summaries:**
+   Receive automated rollups highlighting emerging unhandled exceptions or 500-series HTTP errors across the fleet.
+
+---
+
+### 4. Software Updates & Dependency Patching Automation
+
+1. **Automated Vulnerability Scanning (Dependabot / Renovate):**
+   - Enable GitHub Dependabot or Renovate across all client repositories to monitor CVE security advisories on npm packages (`express`, `prisma`, `jsonwebtoken`, `vite`).
+   - Automatically open PRs for patch and minor security updates.
+2. **Upstream Template / Submodule Pattern:**
+   Maintain a base core template repository (`erp-assistant-core`). When core features or security patches are committed upstream, sync changes downstream to customer repos using automated GitHub Actions or git rebase.
+3. **Database Migration Safety Check:**
+   Never auto-apply database migrations (`prisma migrate deploy`) without an automated pre-migration database snapshot.
+
+[Back to Top / Table of Contents](#table-of-contents)
+
 
 
 
