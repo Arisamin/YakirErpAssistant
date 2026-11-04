@@ -15,6 +15,7 @@
 5. [Telemetry, Error APM & Fleet Logs](#5-telemetry-error-apm--fleet-logs)
 6. [Automated Fleet Maintenance & Security Patching Pipeline](#6-automated-fleet-maintenance--security-patching-pipeline)
 7. [Step-by-Step Implementation Roadmap](#7-step-by-step-implementation-roadmap)
+8. [Standalone Fleet Dashboard UI Specification & Implementation Blueprint](#8-standalone-fleet-dashboard-ui-specification--implementation-blueprint)
 
 ---
 
@@ -198,5 +199,74 @@ Managing software updates across N independent single-tenant instances is automa
 | **Phase 3** | **APM & Error Tracking** | • Setup Sentry organization with project `etaniv-prod`.<br/>• Inject `SENTRY_DSN` into Render environment variables.<br/>• Verify error capturing and source maps. | Day 3 |
 | **Phase 4** | **Cold Backup Verification** | • Integrate nightly `pg_dump` cron to Cloudflare R2 / AWS S3.<br/>• Add backup status check into `/api/health`. | Day 4 |
 | **Phase 5** | **Custom Fleet Portal (When N ≥ 3)** | • Build lightweight Next.js / Cloudflare Pages dashboard.<br/>• Display real-time status matrix across all active contractor clients. | Milestone (3+ Clients) |
+
+[Back to Top / Table of Contents](#table-of-contents)
+
+---
+
+## 8. Standalone Fleet Dashboard UI Specification & Implementation Blueprint
+
+To enable rapid deployment of the Custom Ops Portal (Option B), this section specifies the standalone dashboard interface and architecture.
+
+### 1. Dashboard Layout & Screen Composition
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🛡️ ERP FLEET MONITOR — CENTRAL OPS CONSOLE                                    [🔔 0 Alerts] [⚙️ Settings]│
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ TOTAL INSTANCES: 3     HEALTHY: 2 🟢     DEGRADED: 1 🟡     DOWN: 0 🔴     FLEET UPTIME (30D): 99.94%    │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                        │
+│ ┌────────────────────────────────────┐ ┌────────────────────────────────────┐ ┌──────────────────────┐ │
+│ │ 🏢 אתניב ב.י בע"מ (Etaniv)         │ │ 🏗️ שקד עבודות עפר בע"מ             │ │ 🚜 גולן תשתיות מים   │ │
+│ │ Status: 🟢 HEALTHY (14ms)          │ │ Status: 🟢 HEALTHY (22ms)          │ │ Status: 🟡 DEGRADED  │ │
+│ │ URL: api.etaniv.co.il              │ │ URL: api.shaked.co.il              │ │ URL: api.golan.co.il │ │
+│ │ Version: v1.4.2 [Latest]           │ │ Version: v1.4.2 [Latest]           │ │ Version: v1.4.0 ⚠️   │ │
+│ │ DB Pool: 3/10 Active               │ │ DB Pool: 2/10 Active               │ │ DB Pool: 8/10 Active │ │
+│ │ Last Backup: 3 hrs ago (R2)        │ │ Last Backup: 5 hrs ago (R2)        │ │ Backup: 28 hrs ago ⚠️│ │
+│ │ Pending Invoices: 14               │ │ Pending Invoices: 4                │ │ Pending Invoices: 38 │ │
+│ │ Last Export: 04/11 11:30           │ │ Last Export: 04/11 09:15           │ │ Last Export: 02/11   │ │
+│ │ [View Logs] [Console] [Open ERP]   │ │ [View Logs] [Console] [Open ERP]   │ │ [View Logs] [Fix]    │ │
+│ └────────────────────────────────────┘ └────────────────────────────────────┘ └──────────────────────┘ │
+│                                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 2. Standalone Dashboard Component Architecture (Single-File HTML / React)
+
+A zero-install dashboard can run as a static HTML/React bundle on Cloudflare Pages or local admin workstation:
+
+```typescript
+// Types for Fleet Management Client State
+export interface TenantConfig {
+  id: string;
+  name: string;
+  apiUrl: string;
+  webUrl: string;
+  tier: 'basic' | 'standard' | 'premium';
+  contactPerson: string;
+  contactPhone: string;
+}
+
+export interface TenantHealthResponse {
+  status: 'healthy' | 'degraded' | 'down';
+  instance: {
+    tenantId: string;
+    version: string;
+    uptimeSeconds: number;
+    timestamp: string;
+  };
+  checks: {
+    database: { status: 'up' | 'down'; latencyMs: number };
+    storage: { provider: string; status: 'accessible' | 'error' };
+    backup: { lastCompletedAt: string; status: 'success' | 'stale'; ageHours: number };
+  };
+}
+```
+
+### 3. Immediate Recommended Actions
+1. **Implement `/api/health` in `etaniv-app_21`:** Ensure the Express backend exposes live database ping and version data.
+2. **Setup Initial BetterStack Probe:** Direct 60-second pings to `https://api.etaniv.co.il/api/health` with WhatsApp alert delivery for immediate zero-cost production monitoring.
+3. **Register Sentry Organization:** Connect the API to capture unhandled exceptions before Yakir notices them.
 
 [Back to Top / Table of Contents](#table-of-contents)
