@@ -24,7 +24,8 @@ Comprehensive technical, operational, and architectural documentation is availab
 3. [**Early System Design, Architecture & Operations Archive**](./docs/initial_system_design_archive.md): **Consolidated Historical Archive.** Unifies the early system specifications, component breakdowns (Diagrams 1 & 2), 3-employee manual office workflows, cloud costing estimates, and competitive ERP analysis developed prior to receiving Yakir's source code. Includes an interactive Table of Contents with jump links throughout.
 4. [**Hashavshevet Internal Architecture**](./docs/hashavshevet_internal_architecture.md): Deep dive into Hashavshevet on-premise MS SQL data locality, 2-phase commit state machine, immutable audit logs, and Movein vs. H-Connect technical trade-offs.
 5. [**Accounting Dictionary for Software Engineers**](./docs/accounting_dictionary.md): Living developer dictionary mapping Israeli accounting concepts and Hebrew terminology directly into software engineering equivalents.
-6. [**Simplified MVP Architecture (v2)**](./docs/system_architecture_and_design_v2_simplified.md), [**Cloudflare Deployment Guide**](./docs/cloudflare_deployment_and_dns_guide.md) & [**Auth0 RBAC Guide**](./docs/auth0_rbac_integration_guide.md): Specialized guides for alternative lightweight client-side deployments and Auth0 integrations.
+6. [**Single-Tenant Fleet Architecture & Centralized Monitoring Roadmap**](./docs/fleet_management_and_monitoring_roadmap.md): Operational guide and roadmap for managing, monitoring, and patching multi-client ERP instances from a unified ops dashboard.
+7. [**Simplified MVP Architecture (v2)**](./docs/system_architecture_and_design_v2_simplified.md), [**Cloudflare Deployment Guide**](./docs/cloudflare_deployment_and_dns_guide.md) & [**Auth0 RBAC Guide**](./docs/auth0_rbac_integration_guide.md): Specialized guides for alternative lightweight client-side deployments and Auth0 integrations.
 
 
 ---
