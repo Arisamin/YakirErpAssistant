@@ -589,6 +589,7 @@ This section documents critical functional, technical, and regulatory gaps ident
 | **T-2** | **Disaster Recovery & 7-Year Accounting Retention** | Render's managed PostgreSQL automated daily snapshots have a rolling **7-day retention window**. Free tier databases expire and delete after 30 days. | Israeli Tax Ordinance (*הוראות ניהול ספרים*) legally mandates preserving accounting records for at least **7 years**. If catastrophic corruption or silent deletion exceeds 7 days, data is unrecoverable. | Implement an automated daily/weekly cron task running `pg_dump`, encrypting the archive, and streaming it to immutable cold storage (e.g., AWS S3 Glacier / Cloudflare R2). |
 | **T-3** | **Observability, APM & Error Alerting** | Errors log only to `stdout` via `pino-http` and `console.error(err)` in `middleware/error.ts`. Audit logging failures in `audit.ts` fail silently. | Production errors require manually checking Render log streams. No proactive notifications (Slack, email, SMS) alert Yakir or developers when API endpoints fail or database connections drop. | Integrate an error monitoring service (e.g., **Sentry**) and configure uptime alerting on `/api/health`. |
 | **T-4** | **Unimplemented Automated AI / OCR Extraction** | `etaniv-app_21` currently relies on manual employee data entry for vendor invoices, line splitting, and tax amounts. | The original goal—drastically reducing the time 3 employees spend manually typing invoices—is only partially solved. Manual data entry remains a operational bottleneck. | Implement the multimodal AI extraction pipeline (Hebrew OCR + Vision LLM) to auto-populate invoice fields, perform Luhn checksums, and auto-split VAT. |
+| **T-5** | **Service Availability & Business Continuity During Cloud Downtime** | Single-region hosting on Render (Frankfurt). If Render suffers downtime, DDoS, or network partitioning, Yakir and his employees lose complete access to the web app, supplier payment schedules, and project accounting data. | Critical business operations stall: payments cannot be scheduled, bookkeepers cannot view pending invoices, and site engineers cannot check project budgets. | Implement an offline/read-only business continuity plan: **Automated read-only database replicas**, **local emergency viewer SQLite snapshot**, or **direct pre-signed URL access to 3rd-party cold backups (AWS S3 / Cloudflare R2)**. |
 
 ---
 
@@ -661,6 +662,44 @@ Relying on live cloud database snapshots (like Render's 7-day rolling window) is
    Enable **S3 Object Lock** in *Compliance Mode* with a retention period of 7 years. Once written, neither developers, administrators, nor malicious actors can delete or alter the file until the 7-year statutory period expires.
 4. **Physical Document Scans (`FileAsset`):**
    Scanned PDFs and receipt images are stored directly in the external object store (e.g., Cloudflare R2 / AWS S3) rather than on Render's ephemeral container disk, with identical 7-year lifecycle retention rules.
+
+---
+
+### 3. High Service Availability & Disaster Recovery: Accessing DB Backups When the Service / App Is Down
+
+When Render, the cloud network, or the Docker web service suffers an outage, the business cannot afford a complete blackout of its financial data (supplier payables, payment run lists, project balances). 
+
+Below is the tiered architecture for ensuring uninterrupted operational visibility during service downtime:
+
+```
+[ Primary Production App (Render) ]  ───(Outage / Degraded)───► [ ❌ Down / Unreachable ]
+                │
+                ▼ (Nightly / Scheduled Dump)
+[ Cloudflare R2 / AWS S3 Bucket (Independent Account) ]
+                │
+        ┌───────┴───────────────────────────────┐
+        ▼                                       ▼
+[ Level 1: Standalone Emergency Viewer ]   [ Level 2: Local SQLite / DuckDB Replica ]
+• Read-Only static web app (Cloudflare)   • Local sync agent on Yakir's Office PC
+• Directly parses daily JSON/Parquet       • Bookkeeper can browse suppliers & balances
+• Zero dependency on Render                • 100% offline-capable on local desktop
+```
+
+#### The 3 Service Availability Solutions:
+1. **Level 1: Emergency Static Read-Only Viewer (Web-Accessible):**
+   - Alongside `pg_dump`, an automated GitHub Action or Cloudflare Worker compiles a sanitized, read-only JSON snapshot of active projects, pending invoices, and supplier contact/bank details.
+   - Hosted on a separate, high-availability platform (e.g., **Cloudflare Pages** at `status.etaniv.co.il` or `backup.etaniv.co.il`), protected by simple master password or Google Auth.
+   - When Render is down, Yakir and Sarah log into this emergency portal to look up invoice numbers, supplier phone numbers, and approved payment amounts.
+
+2. **Level 2: Local Office Desktop Mirror (Offline SQLite / Access / Excel):**
+   - The on-premise sync agent (or a daily scheduled script on Yakir's office PC) pulls the latest daily backup snapshot and unpacks it into a local SQLite database or structured Excel workbook (`etaniv-mirror-latest.xlsx`).
+   - If internet or Render goes down completely, office staff open the local mirror on their Windows desktop with zero external network dependencies.
+
+3. **Level 3: Standby Database Replica (Fast Failover):**
+   - For premium tiers or mission-critical contractors, configure PostgreSQL continuous logical replication to a low-cost standby database on a secondary cloud provider (e.g., **Neon**, **Supabase**, or **AWS RDS**).
+   - If Render Frankfurt experiences extended regional failure, changing the DNS CNAME record in Microsoft 365 switches all live traffic to the standby instance within minutes.
+
+[Back to Top / Table of Contents](#table-of-contents)
 
 [Back to Top / Table of Contents](#table-of-contents)
 
