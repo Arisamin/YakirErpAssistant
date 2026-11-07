@@ -26,7 +26,8 @@ Comprehensive technical, operational, and architectural documentation is availab
 5. [**Hashavshevet Internal Architecture**](./docs/hashavshevet_internal_architecture.md): Deep dive into Hashavshevet on-premise MS SQL data locality, 2-phase commit state machine, immutable audit logs, and Movein vs. H-Connect technical trade-offs.
 6. [**Accounting Dictionary for Software Engineers**](./docs/accounting_dictionary.md): Living developer dictionary mapping Israeli accounting concepts and Hebrew terminology directly into software engineering equivalents.
 7. [**Single-Tenant Fleet Architecture & Centralized Monitoring Roadmap**](./docs/fleet_management_and_monitoring_roadmap.md): Operational guide and roadmap for managing, monitoring, and patching multi-client ERP instances from a unified ops dashboard.
-8. [**Simplified MVP Architecture (v2)**](./docs/system_architecture_and_design_v2_simplified.md), [**Cloudflare Deployment Guide**](./docs/cloudflare_deployment_and_dns_guide.md) & [**Auth0 RBAC Guide**](./docs/auth0_rbac_integration_guide.md): Specialized guides for alternative lightweight client-side deployments and Auth0 integrations.
+8. [**Single-Tenant POC Deployment & Fleet Monitoring Plan**](./docs/poc_deployment_and_fleet_monitoring_plan.md): Step-by-step implementation guide for deploying Tenant #1 (Etaniv POC) and establishing a multi-tenant monitoring console using free tiers ($0) with an identified minimal paid path ($14/mo).
+9. [**Simplified MVP Architecture (v2)**](./docs/system_architecture_and_design_v2_simplified.md), [**Cloudflare Deployment Guide**](./docs/cloudflare_deployment_and_dns_guide.md) & [**Auth0 RBAC Guide**](./docs/auth0_rbac_integration_guide.md): Specialized guides for alternative lightweight client-side deployments and Auth0 integrations.
 
 
 ---
