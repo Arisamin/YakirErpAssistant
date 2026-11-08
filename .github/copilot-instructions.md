@@ -33,5 +33,12 @@
 - **No False Account/Location Separation:** Never represent components that run under the same account and physical datacenter (e.g. Render Web API + Render PostgreSQL DB) as completely separate disconnected top-level blocks that could mislead the developer into thinking they exist in separate accounts or environments.
 - **Sub-blocks within Location Containers:** Separate different runtime engines or tiers (e.g. Docker API runtime vs. PostgreSQL DB storage) as **sub-blocks inside their shared hosting/account container**.
 
+## 6. Chat Conversation Language Rule
+- **Primary Language:** Always converse in English in the chat.
+- **Exceptions for Hebrew:** Hebrew is permitted solely when:
+  1. Translating or citing Israeli accounting concepts, document names, and regulatory terms (e.g., *Journal Entry* -> *פקודת יומן*, *General Ledger Account Key* -> *מפתח חשבון*).
+  2. Writing or editing documentation files that are already primarily written in Hebrew (e.g. `docs/etaniv.md`, user guides).
+
+
 
 
