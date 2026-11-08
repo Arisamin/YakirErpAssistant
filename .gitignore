@@ -15,3 +15,12 @@ Desktop.ini
 .env
 .env.local
 *.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Node dependencies and build
+node_modules/
+dist/
+build/

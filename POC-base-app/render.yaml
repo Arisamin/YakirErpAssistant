@@ -1,0 +1,54 @@
+# Render Blueprint — פריסת מערכת <CompNamePlaceHolder> (שרת API + PWA + מסד נתונים) באזור אירופה.
+# שימוש: ב-Render → New → Blueprint → חבר את המאגר. Render יזהה קובץ זה.
+# ערכים המסומנים sync:false יתבקשו ממך בעת ההקמה (סיסמת מנהל, כתובות).
+
+databases:
+  - name: poc-db
+    databaseName: poc_db
+    region: frankfurt
+    plan: free            # נוצר כחינמי; שדרג לתוכנית בתשלום מלוח הבקרה מיד לאחר הפריסה (ראה מדריך). מסד חינמי פג לאחר 30 יום.
+
+services:
+  # ---- שרת ה-API ----
+  - type: web
+    name: poc-api
+    runtime: docker
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    region: frankfurt
+    plan: starter            # שרת בתשלום (~$7/חודש) — לא "נרדם" בחוסר פעילות. מתאים לייצור.
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: poc-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true      # Render מייצר סוד אקראי
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_EMAIL
+        value: <AdminMailPlaceHolder>
+      - key: ADMIN_NAME
+        value: <AdminNamePlaceHolder>
+      - key: ADMIN_PASSWORD
+        sync: false              # יוזן ידנית (סיסמה זמנית חזקה)
+      - key: CORS_ORIGINS
+        value: <AppUrlPlaceHolder>
+
+  # ---- אפליקציית ה-PWA (אתר סטטי) ----
+  - type: web
+    name: poc-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: <ApiUrlPlaceHolder>
+    routes:
+      - type: rewrite          # ניתוב SPA — כל הנתיבים ל-index.html
+        source: /*
+        destination: /index.html
